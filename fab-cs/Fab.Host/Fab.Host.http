@@ -1,0 +1,32 @@
+@Fab.Host_HostAddress = http://localhost:5105
+
+GET {{Fab.Host_HostAddress}}/articles/
+Accept: application/json
+
+###
+
+GET {{Fab.Host_HostAddress}}/articles/1
+Accept: application/json
+
+###
+
+GET {{Fab.Host_HostAddress}}/butts
+Accept: application/json
+
+###
+
+GET {{Fab.Host_HostAddress}}/butts/1
+Accept: application/json
+
+###
+
+
+GET {{Fab.Host_HostAddress}}/api/values
+Accept: application/json
+
+###
+
+GET {{Fab.Host_HostAddress}}/api/values/1
+Accept: application/json
+
+###
