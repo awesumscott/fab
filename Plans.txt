@@ -1,0 +1,54 @@
+-----------------------
+ New Browser Plans
+-----------------------
+
+-Websites are made of structured data served as JSON
+	-Fetches can be full-page data or sections of the site based on API query links
+	-JSON can specify replacements for page sections
+	-Structured data searchable and search results display in a client-specified style
+	-Client settings can determine if pages get fetched with optional accessibility data
+-Browsers are open-source and users can build their own client
+	-Features can be included or left out
+	-Complete control over local GUI and styling settings
+	-The new browser client can be built with webasm to provide a HTML interface for the same content in regular browsers
+-Navigation will be displayed according to client-side preferences
+	-List of main site sections and sub-sections as links
+	-Breadcrumbs can be specified by structured data and optionally be displayed by the client
+-All styling is determined client-side
+	-Fonts, font sizes, margins, colors
+	-Clients can have any number of options for displaying navigation
+	-MAYBE servers can suggest optional styles, and give the client the option to use them
+	-All site sections (partial areas of pages) can be closed and removed from the screen
+		-Locally storing this close data can allow it to be done automatically every visit
+-All images are optional
+	-Users can tell their client to automatically trust and download all images from a domain
+	-Untrusated sites images will make the client display a download button to fetch it manually
+		-Undownloaded images will display the image alt text and the image URL
+		-Downloaded images will replace the manual download button with the image full-width, no server-determined styling options
+-MAYBE client builds can have a built-in browser-renderer panel for links to regular web pages
+	-Otherwise provide HTML links as buttons that specifies it will open another browser application
+
+-Feature-creep optional stuff:
+	-Voting on a client can indicate to the user whether to trust a site, link, or image
+		-Data is stored locally
+		-Data can be uploaded to an aggregate service
+		-Vote-aggregate services can be checked by a client if desired, and provide notices for sites or content
+			-Notices can be ignored, agreed with, or disagreed with, and those choices are stored locally
+	
+-----------------------
+ Content Management
+-----------------------
+
+-Database structure can be vastly different between CMS implementations
+	-The page development can be granular or extremely simplified
+	-The data only must be served up in the correct structured data formats, schema doesn't matter
+-Reference implementation
+	-Data is created in a RDB (Sqlite)
+	-Database can be pre-built into a LiteDB file for uploading to the host for caching requests
+
+-----------------------
+ Web Host
+-----------------------
+
+-Host operates on a LiteDB files (for cached requests as JSON) or on Sqlite files (queried on the fly)
+-Databases are created offline and uploaded, so no web-based authentication will be used
