@@ -18,10 +18,6 @@ class ListDbCommand : ShellCommand {
 
 		using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-		//db.Movies.RemoveRange(db.Movies);
-		//db.People.RemoveRange(db.People);
-		//await db.SaveChangesAsync(cancellationToken);
-
 		var articles = await db.Articles
 			.Include(x => x.Entries)
 			.ThenInclude(x => x.Content)

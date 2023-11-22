@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fab.Shell", "Fab.Shell\Fab.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fab.Data", "Fab.Data\Fab.Data.csproj", "{02F5F3D5-59A9-4D2E-B09A-2996C4E7BE36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fab.Host", "Fab.Host\Fab.Host.csproj", "{CCB2B347-17ED-4552-AD30-1512AFE67C68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fab.Host", "Fab.Host\Fab.Host.csproj", "{CCB2B347-17ED-4552-AD30-1512AFE67C68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fab.Core", "Fab.Core\Fab.Core.csproj", "{8CA7F445-3208-47F1-9D7E-A536B925C386}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fab.Core", "Fab.Core\Fab.Core.csproj", "{8CA7F445-3208-47F1-9D7E-A536B925C386}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fab.Client.Desktop", "Fab.Client.Desktop\Fab.Client.Desktop.csproj", "{74D77426-B436-4C5B-93FA-96EABCB405C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{8CA7F445-3208-47F1-9D7E-A536B925C386}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CA7F445-3208-47F1-9D7E-A536B925C386}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CA7F445-3208-47F1-9D7E-A536B925C386}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74D77426-B436-4C5B-93FA-96EABCB405C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74D77426-B436-4C5B-93FA-96EABCB405C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74D77426-B436-4C5B-93FA-96EABCB405C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74D77426-B436-4C5B-93FA-96EABCB405C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
