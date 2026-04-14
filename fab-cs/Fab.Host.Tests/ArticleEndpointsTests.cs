@@ -23,22 +23,25 @@ public class ArticleEndpointsTests : IClassFixture<FabHostFixture>, IAsyncLifeti
 
 	[Fact]
 	public async Task GetAll_EmptyDatabase_ReturnsEmptyArray() {
-		var response = await _client.GetAsync("/articles");
+		var ct = TestContext.Current.CancellationToken;
+		var response = await _client.GetAsync("/articles", ct);
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		var articles = await response.Content.ReadFromJsonAsync<List<Article>>();
+		var articles = await response.Content.ReadFromJsonAsync<List<Article>>(ct);
 		articles.ShouldNotBeNull();
 		articles.ShouldBeEmpty();
 	}
 
 	[Fact]
 	public async Task GetById_MissingId_Returns404() {
-		var response = await _client.GetAsync("/articles/9999");
+		var ct = TestContext.Current.CancellationToken;
+		var response = await _client.GetAsync("/articles/9999", ct);
 		response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 	}
 
 	[Fact]
 	public async Task GetById_ExistingArticle_ReturnsArticleWithPolymorphicEntries() {
+		var ct = TestContext.Current.CancellationToken;
 		int articleId;
 		await using (var scope = _fixture.CreateScope()) {
 			var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
@@ -50,14 +53,14 @@ public class ArticleEndpointsTests : IClassFixture<FabHostFixture>, IAsyncLifeti
 				}
 			};
 			db.Articles.Add(article);
-			await db.SaveChangesAsync();
+			await db.SaveChangesAsync(ct);
 			articleId = article.Id;
 		}
 
-		var response = await _client.GetAsync($"/articles/{articleId}");
+		var response = await _client.GetAsync($"/articles/{articleId}", ct);
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		var fetched = await response.Content.ReadFromJsonAsync<Article>();
+		var fetched = await response.Content.ReadFromJsonAsync<Article>(ct);
 		fetched.ShouldNotBeNull();
 		fetched.Title.ShouldBe("Test Article");
 		fetched.Entries.Count.ShouldBe(2);
@@ -72,18 +75,19 @@ public class ArticleEndpointsTests : IClassFixture<FabHostFixture>, IAsyncLifeti
 
 	[Fact]
 	public async Task GetAll_MultipleArticles_ReturnsAll() {
+		var ct = TestContext.Current.CancellationToken;
 		await using (var scope = _fixture.CreateScope()) {
 			var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
 			db.Articles.AddRange(
 				new Article { Title = "First" },
 				new Article { Title = "Second" },
 				new Article { Title = "Third" });
-			await db.SaveChangesAsync();
+			await db.SaveChangesAsync(ct);
 		}
 
-		var response = await _client.GetAsync("/articles");
+		var response = await _client.GetAsync("/articles", ct);
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
-		var articles = await response.Content.ReadFromJsonAsync<List<Article>>();
+		var articles = await response.Content.ReadFromJsonAsync<List<Article>>(ct);
 		articles.ShouldNotBeNull();
 		articles.Count.ShouldBe(3);
 		articles.Select(a => a.Title).ShouldBe(new[] { "First", "Second", "Third" }, ignoreOrder: true);

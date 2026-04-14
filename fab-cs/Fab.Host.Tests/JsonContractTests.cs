@@ -23,9 +23,10 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task Response_UsesCamelCaseProperties() {
-		var id = await SeedArticleWithImage();
+		var ct = TestContext.Current.CancellationToken;
+		var id = await SeedArticleWithImage(ct: ct);
 
-		var raw = await _client.GetStringAsync($"/articles/{id}");
+		var raw = await _client.GetStringAsync($"/articles/{id}", ct);
 		using var doc = JsonDocument.Parse(raw);
 
 		doc.RootElement.TryGetProperty("title", out _).ShouldBeTrue("expected camelCase 'title'");
@@ -35,9 +36,10 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task PolymorphicDiscriminator_IsStable() {
-		var id = await SeedArticleWithImage();
+		var ct = TestContext.Current.CancellationToken;
+		var id = await SeedArticleWithImage(ct: ct);
 
-		var raw = await _client.GetStringAsync($"/articles/{id}");
+		var raw = await _client.GetStringAsync($"/articles/{id}", ct);
 		using var doc = JsonDocument.Parse(raw);
 
 		var firstEntry = doc.RootElement.GetProperty("entries")[0];
@@ -47,9 +49,10 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task GetById_AccessibilityDefault_IncludesAltText() {
-		var id = await SeedArticleWithImage();
+		var ct = TestContext.Current.CancellationToken;
+		var id = await SeedArticleWithImage(ct: ct);
 
-		var raw = await _client.GetStringAsync($"/articles/{id}");
+		var raw = await _client.GetStringAsync($"/articles/{id}", ct);
 		using var doc = JsonDocument.Parse(raw);
 
 		var content = doc.RootElement.GetProperty("entries")[0].GetProperty("content");
@@ -59,9 +62,10 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task GetById_AccessibilityFalse_OmitsAltText() {
-		var id = await SeedArticleWithImage();
+		var ct = TestContext.Current.CancellationToken;
+		var id = await SeedArticleWithImage(ct: ct);
 
-		var raw = await _client.GetStringAsync($"/articles/{id}?accessibility=false");
+		var raw = await _client.GetStringAsync($"/articles/{id}?accessibility=false", ct);
 		using var doc = JsonDocument.Parse(raw);
 
 		var content = doc.RootElement.GetProperty("entries")[0].GetProperty("content");
@@ -71,10 +75,11 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task GetAll_AccessibilityFalse_FiltersAcrossMultipleArticles() {
-		await SeedArticleWithImage("First");
-		await SeedArticleWithImage("Second");
+		var ct = TestContext.Current.CancellationToken;
+		await SeedArticleWithImage("First", ct);
+		await SeedArticleWithImage("Second", ct);
 
-		var raw = await _client.GetStringAsync("/articles?accessibility=false");
+		var raw = await _client.GetStringAsync("/articles?accessibility=false", ct);
 		using var doc = JsonDocument.Parse(raw);
 
 		foreach (var article in doc.RootElement.EnumerateArray()) {
@@ -85,16 +90,17 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 
 	[Fact]
 	public async Task OpenApi_EndpointIsReachable() {
-		var response = await _client.GetAsync("/openapi/v1.json");
+		var ct = TestContext.Current.CancellationToken;
+		var response = await _client.GetAsync("/openapi/v1.json", ct);
 		response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-		var body = await response.Content.ReadAsStringAsync();
+		var body = await response.Content.ReadAsStringAsync(ct);
 		using var doc = JsonDocument.Parse(body);
 		doc.RootElement.GetProperty("openapi").GetString().ShouldNotBeNullOrWhiteSpace();
 		doc.RootElement.GetProperty("paths").TryGetProperty("/articles/{id}", out _).ShouldBeTrue();
 	}
 
-	private async Task<int> SeedArticleWithImage(string title = "Test") {
+	private async Task<int> SeedArticleWithImage(string title = "Test", CancellationToken ct = default) {
 		await using var scope = _fixture.CreateScope();
 		var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
 		var article = new Article {
@@ -104,7 +110,7 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 			}
 		};
 		db.Articles.Add(article);
-		await db.SaveChangesAsync();
+		await db.SaveChangesAsync(ct);
 		return article.Id;
 	}
 }
