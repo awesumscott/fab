@@ -12,11 +12,12 @@ Fab is an experimental "new browser" / CMS stack. See `Plans.txt` at the repo ro
 - **Fab.Core** — Shared EF Core + hosting glue. Owns `CmsWorkingDbContext` (TPT mapping: `ContentBase` → `ContentBases` table, with per-type tables for `Paragraph`/`Image`) and `FabGlobal`, the static host/service-provider holder. `FabGlobal.ConfigureFab` is the single place that wires `fab.json` config and the SQLite `DbConnection` — both the web host and shell call into it.
 - **Fab.Host** — ASP.NET Core minimal-API (`WebApplication.CreateSlimBuilder`) exposing `/articles` and `/articles/{id}` that eager-load `Entries.Content`. This is the JSON server clients fetch from.
 - **Fab.Shell** — Console CMS editor. Builds a generic host via `FabGlobal.BuildHost`, registers `ShellCommand`s (`ListDbCommand`, `PopulateDbCommand`) as transient services, and drives them through `Commands/Menu.cs`. New shell features should follow the `ShellCommand` + `Menu` pattern and register in `Program.cs`.
-- **Fab.Client.Desktop** — WPF (`net8.0-windows`, `UseWPF`) reference client using `CommunityToolkit.Mvvm`. MVVM split: `ViewModels/` + `Views/` with one VM per content type mirroring the polymorphic model (`ArticleViewModel`, `ParagraphViewModel`, `OrderedContentEntryViewModel`). Client-side styling is a design goal — avoid baking server-driven visual decisions into views.
+- **Fab.Client.Core** — UI-agnostic client library (`net10.0`). Hosts the ViewModels (`ArticleViewModel`, `OrderedContentEntryViewModel`, `ParagraphViewModel`, `ImageViewModel`, `MainWindowViewModel`), the `IContentClient` abstraction + `HttpContentClient` implementation, `FabClientOptions` (base URL), and `AddFabClient` DI extension. Frontends (WPF, future Avalonia/WASM) reference this and supply only UI.
+- **Fab.Client.Desktop** — WPF (`net10.0-windows`, `UseWPF`) shell: `App`, `MainWindow`, XAML views + `DataTemplate`s mapping VMs from `Fab.Client.Core.ViewModels` to views in `Fab.Client.Desktop.Views`. Boots its own host via `Host.CreateApplicationBuilder`, calls `AddFabClient`, resolves `MainWindow` + VM from DI. No EF / `CmsWorkingDbContext` reference — all data comes from the Host via HTTP.
 
 ## Dependency direction
 
-`Fab.Data` → (no refs). `Fab.Core` → Data. `Fab.Host`, `Fab.Shell`, `Fab.Client.Desktop` → Core (+ Data). Keep Data POCO-only; EF/hosting concerns belong in Core.
+`Fab.Data` → (no refs). `Fab.Core` → Data (EF + hosting glue). `Fab.Client.Core` → Data (no EF). `Fab.Host` and `Fab.Shell` → `Fab.Core` (+ Data). `Fab.Client.Desktop` → `Fab.Client.Core` only. Keep Data POCO-only; keep `Fab.Client.Core` EF-free so WASM/Avalonia can reuse it.
 
 ## Config
 

@@ -24,6 +24,7 @@
 		<ProjectReference Include="..\Fab.Host\Fab.Host.csproj" />
 		<ProjectReference Include="..\Fab.Core\Fab.Core.csproj" />
 		<ProjectReference Include="..\Fab.Data\Fab.Data.csproj" />
+		<ProjectReference Include="..\Fab.Client.Core\Fab.Client.Core.csproj" />
 	</ItemGroup>
 
 </Project>

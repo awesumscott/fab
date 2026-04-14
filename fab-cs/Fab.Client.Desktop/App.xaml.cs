@@ -1,8 +1,9 @@
-using Fab.Client.Desktop.ViewModels;
-using Fab.Core;
+using Fab.Client.Core;
+using Fab.Client.Core.ViewModels;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Windows;
 
 namespace Fab.Client.Desktop;
@@ -14,20 +15,23 @@ public partial class App : Application {
 		base.OnStartup(e);
 
 		var builder = Host.CreateApplicationBuilder();
-		builder.ConfigureFab();
-		builder.Services.AddFabDatabaseFactory(builder.Configuration);
-		builder.Services.AddTransient<TestService>();
-		builder.Services.AddTransient<MainWindowViewModel>();
+		builder.Configuration
+			.SetBasePath(Directory.GetCurrentDirectory())
+			.AddJsonFile("fab.json", optional: true, reloadOnChange: true);
+
+		builder.Services.AddFabClient(builder.Configuration);
 		builder.Services.AddSingleton<MainWindow>();
-		builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
 
 		_host = builder.Build();
 		await _host.StartAsync();
 
 		var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-		mainWindow.DataContext = _host.Services.GetRequiredService<MainWindowViewModel>();
+		var viewModel = _host.Services.GetRequiredService<MainWindowViewModel>();
+		mainWindow.DataContext = viewModel;
 		Current.MainWindow = mainWindow;
 		mainWindow.Show();
+
+		_ = viewModel.LoadFirstArticleAsync();
 	}
 
 	protected override async void OnExit(ExitEventArgs e) {

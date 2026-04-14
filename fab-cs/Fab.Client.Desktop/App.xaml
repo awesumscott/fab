@@ -3,7 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local="clr-namespace:Fab.Client.Desktop"
 	xmlns:v="clr-namespace:Fab.Client.Desktop.Views"
-	xmlns:vm="clr-namespace:Fab.Client.Desktop.ViewModels">
+	xmlns:vm="clr-namespace:Fab.Client.Core.ViewModels;assembly=Fab.Client.Core">
 	<Application.Resources>
 
 		<DataTemplate DataType="{x:Type vm:ArticleViewModel}">
@@ -14,6 +14,9 @@
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:ParagraphViewModel}">
 			<v:ParagraphView/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:ImageViewModel}">
+			<v:ImageView/>
 		</DataTemplate>
 	</Application.Resources>
 </Application>

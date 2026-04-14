@@ -1,5 +1,5 @@
 {
-	"ConnectionStrings": {
-		"DbConnection": "Data Source=d:\\dev\\fab.db"
+	"FabClient": {
+		"BaseUrl": "http://localhost:5099"
 	}
 }

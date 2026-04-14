@@ -5,7 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:Fab.Client.Desktop"
 	xmlns:v="clr-namespace:Fab.Client.Desktop.Views"
-	xmlns:vm="clr-namespace:Fab.Client.Desktop.ViewModels"
+	xmlns:vm="clr-namespace:Fab.Client.Core.ViewModels;assembly=Fab.Client.Core"
 	mc:Ignorable="d"
 	Title="Friggin' Awesome Browser demo" Height="450" Width="800">
 	<DockPanel>
