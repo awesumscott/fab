@@ -28,14 +28,14 @@ public static class FabGlobal {
 	public static IHostApplicationBuilder ConfigureFab(this IHostApplicationBuilder builder) {
 		builder.Configuration
 			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("fab.json", false, true);
+			.AddJsonFile("fab.json", true, true);
 		return builder;
 	}
 
 	public static IHostBuilder ConfigureFab(this IHostBuilder builder) {
 		return builder.ConfigureAppConfiguration(config => config
 			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("fab.json", false, true)
+			.AddJsonFile("fab.json", true, true)
 		);
 	}
 

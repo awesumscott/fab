@@ -14,9 +14,9 @@ public class Unique {
 //	public string Name { get; set; } = string.Empty;
 //}
 
-[JsonDerivedType(typeof(ContentBase))]
-[JsonDerivedType(typeof(Paragraph))]
-[JsonDerivedType(typeof(Image))]
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(Paragraph), "paragraph")]
+[JsonDerivedType(typeof(Image), "image")]
 public class ContentBase : Unique {}
 
 public class Paragraph : ContentBase {

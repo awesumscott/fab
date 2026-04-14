@@ -33,4 +33,12 @@ dotnet run --project Fab.Shell
 dotnet run --project Fab.Client.Desktop   # Windows only (WPF)
 ```
 
-No test project exists yet. No linter config beyond default analyzers. EF Core tools are referenced in `Fab.Host` (`dotnet ef ... --project Fab.Host`) for migrations if/when added — the schema is currently created implicitly.
+Run integration tests:
+
+```
+dotnet test Fab.Host.Tests
+```
+
+Tests boot `Fab.Host` in-process via `WebApplicationFactory<Program>` against a fresh temp-file SQLite database (schema via `EnsureCreated`, fixture cleans up on dispose). Connection string is overridden per-fixture — tests never touch your real DB.
+
+No linter config beyond default analyzers. EF Core tools are referenced in `Fab.Host` (`dotnet ef ... --project Fab.Host`) for migrations if/when added — the schema is currently created implicitly.

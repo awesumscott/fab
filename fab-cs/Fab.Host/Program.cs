@@ -2,7 +2,7 @@ using Fab.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Fab.Host {
-	public class Program {
+	public partial class Program {
 		public static void Main(string[] args) {
 			var builder = WebApplication.CreateSlimBuilder(args);
 			builder.ConfigureFab();
