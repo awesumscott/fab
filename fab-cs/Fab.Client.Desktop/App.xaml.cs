@@ -1,4 +1,5 @@
 ﻿using Fab.Client.Desktop.ViewModels;
+using Fab.Client.Desktop.Views;
 using Fab.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

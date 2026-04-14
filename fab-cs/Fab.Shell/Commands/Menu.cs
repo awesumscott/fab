@@ -1,7 +1,7 @@
 ﻿namespace Fab.Shell.Commands;
 
 public sealed class Menu : ShellCommand {
-	private Dictionary<string, Func<ShellCommand>> _commands;
+	private readonly Dictionary<string, Func<ShellCommand>> _commands;
 
 	public Menu(string name, Dictionary<string, Func<ShellCommand>> commands) {
 		Name = name;

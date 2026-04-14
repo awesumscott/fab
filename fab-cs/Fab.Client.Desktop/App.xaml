@@ -3,17 +3,32 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local="clr-namespace:Fab.Client.Desktop"
 	xmlns:v="clr-namespace:Fab.Client.Desktop.Views"
-	xmlns:vm="clr-namespace:Fab.Client.Desktop.ViewModels">
+	xmlns:browsev="clr-namespace:Fab.Client.Desktop.Views.Browse"
+	xmlns:editv="clr-namespace:Fab.Client.Desktop.Views.Edit"
+	xmlns:browsevm="clr-namespace:Fab.Client.Desktop.ViewModels.Browse"
+	xmlns:editvm="clr-namespace:Fab.Client.Desktop.ViewModels.Edit"
+	xmlns:fd="clr-namespace:Fab.Data;assembly=Fab.Data">
 	<Application.Resources>
-
-		<DataTemplate DataType="{x:Type vm:ArticleViewModel}">
-			<v:ArticleView/>
+		<DataTemplate DataType="{x:Type browsevm:ArticleViewModel}">
+			<browsev:ArticleView/>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type vm:OrderedContentEntryViewModel}">
-			<v:OrderedContentEntryView/>
+		<DataTemplate DataType="{x:Type browsevm:OrderedContentEntryViewModel}">
+			<browsev:OrderedContentEntryView/>
 		</DataTemplate>
-		<DataTemplate DataType="{x:Type vm:ParagraphViewModel}">
-			<v:ParagraphView/>
+		<DataTemplate DataType="{x:Type browsevm:ParagraphViewModel}">
+			<browsev:ParagraphView/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type editvm:EditTextFieldViewModel}">
+			<editv:EditTextView/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type editvm:EditListViewModel}">
+			<editv:EditListView/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type editvm:EditModelViewModel}">
+			<editv:EditGenericModelView/>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type fd:IUnique}">
+			<editv:EditGenericModelView/>
 		</DataTemplate>
 	</Application.Resources>
 </Application>

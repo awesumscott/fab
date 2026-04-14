@@ -34,6 +34,41 @@
 		-Data can be uploaded to an aggregate service
 		-Vote-aggregate services can be checked by a client if desired, and provide notices for sites or content
 			-Notices can be ignored, agreed with, or disagreed with, and those choices are stored locally
+
+Response example:
+{
+	{	"type": "meta",
+		"title": "Homepage",
+		"description": "Lorem ipsum..."
+	},
+	{	"type": "nav",
+		"links": [
+			{"url": "a", "text": "Link 1"},
+			{"url": "b", "text": "Link 2"},
+			{"url": "c", "text": "Link 3"}
+		]
+	},
+	{	"type": "article",
+		"data": {
+			"title": "Article title",
+			"entries": [
+				{	"order": 0,
+					"type": "Paragraph",
+					"content": {
+						"text": "Lorem ipsum..."
+					}
+				},
+				{	"order": 0,
+					"type": "Image",
+					"content": {
+						"url": "img.png",
+						"alt": "Image description"
+					}
+				}
+			]
+		}
+	}
+}
 	
 -----------------------
  Content Management
