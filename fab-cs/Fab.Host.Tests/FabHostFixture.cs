@@ -17,15 +17,16 @@ public sealed class FabHostFixture : WebApplicationFactory<Program>, IAsyncLifet
 		return base.CreateHost(builder);
 	}
 
-	public async Task InitializeAsync() {
+	public async ValueTask InitializeAsync() {
 		using var scope = Services.CreateScope();
 		var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
 		await db.Database.EnsureCreatedAsync();
 	}
 
-	async Task IAsyncLifetime.DisposeAsync() {
-		await DisposeAsync();
+	public override async ValueTask DisposeAsync() {
+		await base.DisposeAsync();
 		if (File.Exists(_dbPath)) File.Delete(_dbPath);
+		GC.SuppressFinalize(this);
 	}
 
 	public AsyncServiceScope CreateScope() => Services.CreateAsyncScope();

@@ -17,8 +17,8 @@ public class HttpContentClientTests : IClassFixture<FabHostFixture>, IAsyncLifet
 		_client = new HttpContentClient(http);
 	}
 
-	public Task InitializeAsync() => FabHostFixture.ResetDatabaseAsync(_fixture);
-	public Task DisposeAsync() => Task.CompletedTask;
+	public ValueTask InitializeAsync() => new(FabHostFixture.ResetDatabaseAsync(_fixture));
+	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
 	[Fact]
 	public async Task GetArticlesAsync_EmptyDatabase_ReturnsEmpty() {

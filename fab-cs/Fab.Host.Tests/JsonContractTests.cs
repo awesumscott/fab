@@ -17,9 +17,9 @@ public class JsonContractTests : IClassFixture<FabHostFixture>, IAsyncLifetime {
 		_client = fixture.CreateClient();
 	}
 
-	public Task InitializeAsync() => FabHostFixture.ResetDatabaseAsync(_fixture);
+	public ValueTask InitializeAsync() => new(FabHostFixture.ResetDatabaseAsync(_fixture));
 
-	public Task DisposeAsync() => Task.CompletedTask;
+	public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
 	[Fact]
 	public async Task Response_UsesCamelCaseProperties() {
