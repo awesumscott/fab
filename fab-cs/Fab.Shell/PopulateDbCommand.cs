@@ -18,12 +18,13 @@ class PopulateDbCommand(IDbContextFactory<CmsWorkingDbContext> dbContextFactory)
 		await db.Database.EnsureCreatedAsync(cancellationToken);
 		//await db.Database.MigrateAsync(cancellationToken);
 
-		try {
-			db.Articles.RemoveRange(db.Articles);
-			db.Images.RemoveRange(db.Images);
-			db.Paragraphs.RemoveRange(db.Paragraphs);
-			await db.SaveChangesAsync(cancellationToken);
-		} catch { }
+		await db.Database.ExecuteSqlRawAsync(
+			"DELETE FROM OrderedContentEntry; " +
+			"DELETE FROM Paragraphs; " +
+			"DELETE FROM Images; " +
+			"DELETE FROM Articles; " +
+			"DELETE FROM ContentBases;",
+			cancellationToken);
 
 		await db.Articles.AddAsync(new Article() {
 			Title = "Test Article 0",
