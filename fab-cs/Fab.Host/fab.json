@@ -1,5 +1,5 @@
 {
-	"ConnectionStrings": {
-		"DbConnection": "Data Source=d:\\dev\\fab.db"
+	"Database": {
+		"ConnectionString": "Data Source=fab.db"
 	}
 }

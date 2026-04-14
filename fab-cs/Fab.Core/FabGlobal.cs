@@ -1,7 +1,9 @@
+using Fab.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Fab.Core;
 
@@ -37,7 +39,17 @@ public static class FabGlobal {
 		);
 	}
 
-	public static IServiceCollection AddFabDatabase(this IServiceCollection services, IConfiguration configuration) =>
-		services.AddDbContext<CmsWorkingDbContext>(options =>
-			options.UseSqlite(configuration.GetConnectionString("DbConnection")));
+	public static IServiceCollection AddFabDatabase(this IServiceCollection services, IConfiguration configuration) {
+		services.AddOptions<FabDatabaseOptions>()
+			.Bind(configuration.GetSection(FabDatabaseOptions.Section))
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
+
+		services.AddDbContext<CmsWorkingDbContext>((sp, options) => {
+			var dbOptions = sp.GetRequiredService<IOptions<FabDatabaseOptions>>().Value;
+			options.UseSqlite(dbOptions.ConnectionString);
+		});
+
+		return services;
+	}
 }
