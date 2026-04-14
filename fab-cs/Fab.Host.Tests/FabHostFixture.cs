@@ -29,4 +29,15 @@ public sealed class FabHostFixture : WebApplicationFactory<Program>, IAsyncLifet
 	}
 
 	public AsyncServiceScope CreateScope() => Services.CreateAsyncScope();
+
+	public static async Task ResetDatabaseAsync(FabHostFixture fixture) {
+		await using var scope = fixture.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
+		await db.Database.ExecuteSqlRawAsync(
+			"DELETE FROM OrderedContentEntry; " +
+			"DELETE FROM Paragraphs; " +
+			"DELETE FROM Images; " +
+			"DELETE FROM Articles; " +
+			"DELETE FROM ContentBases;");
+	}
 }

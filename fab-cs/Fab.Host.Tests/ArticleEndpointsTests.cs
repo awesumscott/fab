@@ -17,14 +17,7 @@ public class ArticleEndpointsTests : IClassFixture<FabHostFixture>, IAsyncLifeti
 		_client = fixture.CreateClient();
 	}
 
-	public async Task InitializeAsync() {
-		await using var scope = _fixture.CreateScope();
-		var db = scope.ServiceProvider.GetRequiredService<CmsWorkingDbContext>();
-		db.Articles.RemoveRange(db.Articles);
-		db.Set<OrderedContentEntry>().RemoveRange(db.Set<OrderedContentEntry>());
-		db.Set<ContentBase>().RemoveRange(db.Set<ContentBase>());
-		await db.SaveChangesAsync();
-	}
+	public Task InitializeAsync() => FabHostFixture.ResetDatabaseAsync(_fixture);
 
 	public Task DisposeAsync() => Task.CompletedTask;
 
