@@ -28,7 +28,8 @@ public static class FabGlobal {
 	public static IHostApplicationBuilder ConfigureFab(this IHostApplicationBuilder builder) {
 		builder.Configuration
 			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("fab.json", true, true);
+			.AddJsonFile("fab.json", true, true)
+			.AddEnvironmentVariables();
 		return builder;
 	}
 
@@ -36,6 +37,7 @@ public static class FabGlobal {
 		return builder.ConfigureAppConfiguration(config => config
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile("fab.json", true, true)
+			.AddEnvironmentVariables()
 		);
 	}
 
