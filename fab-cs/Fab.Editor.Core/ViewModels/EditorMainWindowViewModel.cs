@@ -40,6 +40,25 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	}
 
 	[RelayCommand]
+	private async Task NewArticleAsync(CancellationToken cancellationToken) {
+		IsBusy = true;
+		try {
+			await _db.Database.MigrateAsync(cancellationToken);
+			_article = new Article { Title = "Untitled" };
+			_db.Articles.Add(_article);
+			await _db.SaveChangesAsync(cancellationToken);
+			Editor = new EditGenericModelViewModel(_article);
+			Status = $"Created article #{_article.Id}";
+		}
+		catch (Exception ex) {
+			Status = $"Create failed: {ex.Message}";
+		}
+		finally {
+			IsBusy = false;
+		}
+	}
+
+	[RelayCommand]
 	private async Task SaveAsync(CancellationToken cancellationToken) {
 		if (_article is null) return;
 		IsBusy = true;

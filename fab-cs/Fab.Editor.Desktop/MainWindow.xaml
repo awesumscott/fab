@@ -10,6 +10,7 @@
 	mc:Ignorable="d">
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+			<Button Content="New Article" Command="{Binding NewArticleCommand}" Padding="12,4" Margin="0,0,4,0"/>
 			<Button Content="Save" Command="{Binding SaveCommand}" Padding="12,4"/>
 		</StackPanel>
 		<StatusBar DockPanel.Dock="Bottom">
