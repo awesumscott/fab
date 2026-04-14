@@ -23,7 +23,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	public async Task LoadFirstArticleAsync(CancellationToken cancellationToken = default) {
 		IsBusy = true;
 		try {
-			await _db.Database.EnsureCreatedAsync(cancellationToken);
+			await _db.Database.MigrateAsync(cancellationToken);
 			_article = await _db.Articles
 				.Include(a => a.Entries).ThenInclude(e => e.Content)
 				.FirstOrDefaultAsync(cancellationToken);

@@ -45,4 +45,12 @@ dotnet test Fab.Host.Tests
 
 Tests boot `Fab.Host` in-process via `WebApplicationFactory<Program>` against a fresh temp-file SQLite database (schema via `EnsureCreated`, fixture cleans up on dispose). Connection string is overridden per-fixture — tests never touch your real DB.
 
-No linter config beyond default analyzers. EF Core tools are referenced in `Fab.Host` (`dotnet ef ... --project Fab.Host`) for migrations if/when added — the schema is currently created implicitly.
+No linter config beyond default analyzers.
+
+EF migrations live in `Fab.Core/Migrations/` (the assembly that owns `CmsWorkingDbContext`). To add a new migration:
+
+```
+dotnet ef migrations add <Name> --project Fab.Core --startup-project Fab.Host
+```
+
+`Fab.Editor.Desktop` and `Fab.Shell.PopulateDbCommand` call `Database.MigrateAsync()` on startup to apply pending migrations. `Fab.Host` deliberately does not — per `Plans.txt`, databases are authored offline and uploaded; the Host is a read-only consumer that should not mutate schema. Tests use `Database.EnsureCreatedAsync()` against a throwaway temp-file DB (no migration history), which EF accepts with a warning.

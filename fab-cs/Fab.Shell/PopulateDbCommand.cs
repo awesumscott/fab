@@ -14,8 +14,7 @@ class PopulateDbCommand(IDbContextFactory<CmsWorkingDbContext> dbContextFactory)
 		using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 		Console.WriteLine($"Populating DB: {db.Database.GetConnectionString()}");
 
-		await db.Database.EnsureCreatedAsync(cancellationToken);
-		//await db.Database.MigrateAsync(cancellationToken);
+		await db.Database.MigrateAsync(cancellationToken);
 
 		await db.Database.ExecuteSqlRawAsync(
 			"DELETE FROM OrderedContentEntry; " +
