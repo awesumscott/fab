@@ -35,40 +35,43 @@
 		-Vote-aggregate services can be checked by a client if desired, and provide notices for sites or content
 			-Notices can be ignored, agreed with, or disagreed with, and those choices are stored locally
 
-Response example:
+Response shape — per-resource endpoints, composed client-side:
+
+GET /articles/{id}
 {
-	{	"type": "meta",
-		"title": "Homepage",
-		"description": "Lorem ipsum..."
-	},
-	{	"type": "nav",
-		"links": [
-			{"url": "a", "text": "Link 1"},
-			{"url": "b", "text": "Link 2"},
-			{"url": "c", "text": "Link 3"}
-		]
-	},
-	{	"type": "article",
-		"data": {
-			"title": "Article title",
-			"entries": [
-				{	"order": 0,
-					"type": "Paragraph",
-					"content": {
-						"text": "Lorem ipsum..."
-					}
-				},
-				{	"order": 0,
-					"type": "Image",
-					"content": {
-						"url": "img.png",
-						"alt": "Image description"
-					}
-				}
-			]
+	"id": 1,
+	"title": "Article title",
+	"entries": [
+		{	"order": 0,
+			"content": { "type": "paragraph", "id": 10, "text": "Lorem ipsum..." }
+		},
+		{	"order": 1,
+			"content": { "type": "image", "id": 11, "url": "img.png", "alt": "Image description" }
 		}
-	}
+	]
 }
+
+GET /site  (planned — nav + site-wide metadata)
+{
+	"meta": { "title": "Homepage", "description": "Lorem ipsum..." },
+	"nav": [
+		{ "url": "a", "text": "Link 1" },
+		{ "url": "b", "text": "Link 2" },
+		{ "url": "c", "text": "Link 3" }
+	]
+}
+
+No server-side page envelope. Clients that want a one-call page bundle
+compose it themselves by parallelizing these endpoints (see
+IContentClient in Fab.Client.Core). That keeps nav/meta cacheable
+separately from articles, avoids a duplicate route surface, and
+leaves "Page as a first-class domain entity" open as a future
+decision rather than baked into the wire format.
+
+Polymorphic content (Paragraph/Image) carries a "type" discriminator
+on the content object itself — "paragraph", "image", etc. Properties
+use camelCase on the wire. [Accessibility]-marked fields (e.g.
+Image.alt) are omitted when the client requests ?accessibility=false.
 
 -----------------------
  Content Management
