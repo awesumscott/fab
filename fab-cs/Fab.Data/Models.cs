@@ -5,7 +5,11 @@ namespace Fab.Data;
 [AttributeUsage(AttributeTargets.Property)]
 public class AccessibilityAttribute : Attribute {}
 
-public class Unique {
+public interface IUnique {
+	int Id { get; set; }
+}
+
+public class Unique : IUnique {
 	//public Guid Id { get; set; }
 	public int Id { get; set; }
 }

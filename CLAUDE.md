@@ -14,10 +14,12 @@ Fab is an experimental "new browser" / CMS stack. See `Plans.txt` at the repo ro
 - **Fab.Shell** — Console CMS editor. Builds a generic host via `FabGlobal.BuildHost`, registers `ShellCommand`s (`ListDbCommand`, `PopulateDbCommand`) as transient services, and drives them through `Commands/Menu.cs`. New shell features should follow the `ShellCommand` + `Menu` pattern and register in `Program.cs`.
 - **Fab.Client.Core** — UI-agnostic client library (`net10.0`). Hosts the ViewModels (`ArticleViewModel`, `OrderedContentEntryViewModel`, `ParagraphViewModel`, `ImageViewModel`, `MainWindowViewModel`), the `IContentClient` abstraction + `HttpContentClient` implementation, `FabClientOptions` (base URL), and `AddFabClient` DI extension. Frontends (WPF, future Avalonia/WASM) reference this and supply only UI.
 - **Fab.Client.Desktop** — WPF (`net10.0-windows`, `UseWPF`) shell: `App`, `MainWindow`, XAML views + `DataTemplate`s mapping VMs from `Fab.Client.Core.ViewModels` to views in `Fab.Client.Desktop.Views`. Boots its own host via `Host.CreateApplicationBuilder`, calls `AddFabClient`, resolves `MainWindow` + VM from DI. No EF / `CmsWorkingDbContext` reference — all data comes from the Host via HTTP.
+- **Fab.Editor.Core** — reflection-driven generic-form editor library (`net10.0`). References `Fab.Data` + `Fab.Core`. Given any POCO, `EditGenericModelViewModel.BuildFields` introspects its properties and emits child `IEditableField` VMs: `string` → `EditTextFieldViewModel` (two-way binding via `PropertyInfo`), `List<T>` → `EditListViewModel` (child editors for each item), `IUnique`-implementing nested types → recursive `EditGenericModelViewModel`. Other types are skipped. `EditorMainWindowViewModel` holds a DbContext for the app's lifetime, loads an article with `Include(Entries).ThenInclude(Content)`, and exposes a Save command that calls `SaveChangesAsync` on the change-tracked entity.
+- **Fab.Editor.Desktop** — WPF (`net10.0-windows`) editor app. References `Fab.Editor.Core` + `Fab.Core`. Unlike `Fab.Client.Desktop`, this one **talks to SQLite directly** via `AddFabDatabaseFactory` — aligns with `Plans.txt` ("databases are created offline and uploaded, no web-based auth"). Host stays read-only HTTP; the editor does the writes locally.
 
 ## Dependency direction
 
-`Fab.Data` → (no refs). `Fab.Core` → Data (EF + hosting glue). `Fab.Client.Core` → Data (no EF). `Fab.Host` and `Fab.Shell` → `Fab.Core` (+ Data). `Fab.Client.Desktop` → `Fab.Client.Core` only. Keep Data POCO-only; keep `Fab.Client.Core` EF-free so WASM/Avalonia can reuse it.
+`Fab.Data` → (no refs). `Fab.Core` → Data (EF + hosting glue). `Fab.Client.Core` → Data (no EF). `Fab.Editor.Core` → Data + Core (EF OK — editor is local-first). `Fab.Host` and `Fab.Shell` → `Fab.Core` (+ Data). `Fab.Client.Desktop` → `Fab.Client.Core` only. `Fab.Editor.Desktop` → `Fab.Editor.Core` + `Fab.Core`. Keep Data POCO-only; keep `Fab.Client.Core` EF-free so WASM/Avalonia can reuse it.
 
 ## Config
 
@@ -32,6 +34,7 @@ dotnet build Fab.sln
 dotnet run --project Fab.Host
 dotnet run --project Fab.Shell
 dotnet run --project Fab.Client.Desktop   # Windows only (WPF)
+dotnet run --project Fab.Editor.Desktop   # Windows only (WPF)
 ```
 
 Run integration tests:
