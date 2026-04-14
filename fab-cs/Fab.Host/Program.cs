@@ -6,6 +6,7 @@ namespace Fab.Host {
 		public static void Main(string[] args) {
 			var builder = WebApplication.CreateSlimBuilder(args);
 			builder.ConfigureFab();
+			builder.Services.AddFabDatabase(builder.Configuration);
 			//builder.Services.AddControllers();
 			//builder.Services.ConfigureHttpJsonOptions(options => {
 			//	options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);

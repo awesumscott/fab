@@ -11,6 +11,7 @@ internal sealed class Program {
 	static async Task Main(string[] args) {
 		FabGlobal.BuildHost(builder => builder
 			.ConfigureServices((context, services) => services
+				.AddFabDatabase(context.Configuration)
 				.AddTransient<ListDbCommand>()
 				.AddTransient<PopulateDbCommand>()
 			)
