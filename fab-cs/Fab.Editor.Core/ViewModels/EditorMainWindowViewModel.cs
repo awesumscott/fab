@@ -13,9 +13,11 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[ObservableProperty] private EditGenericModelViewModel? _editor;
 	[ObservableProperty] private string? _status;
 	[ObservableProperty] private bool _isBusy;
+	[ObservableProperty] private string _title = "Fab CMS Editor";
 
 	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory) {
 		_db = factory.CreateDbContext();
+		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
 	}
 
 	public async Task LoadFirstArticleAsync(CancellationToken cancellationToken = default) {

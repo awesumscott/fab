@@ -11,9 +11,8 @@ class PopulateDbCommand(IDbContextFactory<CmsWorkingDbContext> dbContextFactory)
 	private IDbContextFactory<CmsWorkingDbContext> _dbContextFactory = dbContextFactory;
 
 	public override async Task Execute(CancellationToken cancellationToken) {
-		Console.WriteLine("Populating Db");
-
 		using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+		Console.WriteLine($"Populating DB: {db.Database.GetConnectionString()}");
 
 		await db.Database.EnsureCreatedAsync(cancellationToken);
 		//await db.Database.MigrateAsync(cancellationToken);
