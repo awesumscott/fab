@@ -40,16 +40,27 @@ public static class FabGlobal {
 	}
 
 	public static IServiceCollection AddFabDatabase(this IServiceCollection services, IConfiguration configuration) {
-		services.AddOptions<FabDatabaseOptions>()
-			.Bind(configuration.GetSection(FabDatabaseOptions.Section))
-			.ValidateDataAnnotations()
-			.ValidateOnStart();
-
+		BindFabDatabaseOptions(services, configuration);
 		services.AddDbContext<CmsWorkingDbContext>((sp, options) => {
 			var dbOptions = sp.GetRequiredService<IOptions<FabDatabaseOptions>>().Value;
 			options.UseSqlite(dbOptions.ConnectionString);
 		});
-
 		return services;
+	}
+
+	public static IServiceCollection AddFabDatabaseFactory(this IServiceCollection services, IConfiguration configuration) {
+		BindFabDatabaseOptions(services, configuration);
+		services.AddDbContextFactory<CmsWorkingDbContext>((sp, options) => {
+			var dbOptions = sp.GetRequiredService<IOptions<FabDatabaseOptions>>().Value;
+			options.UseSqlite(dbOptions.ConnectionString);
+		});
+		return services;
+	}
+
+	private static void BindFabDatabaseOptions(IServiceCollection services, IConfiguration configuration) {
+		services.AddOptions<FabDatabaseOptions>()
+			.Bind(configuration.GetSection(FabDatabaseOptions.Section))
+			.ValidateDataAnnotations()
+			.ValidateOnStart();
 	}
 }

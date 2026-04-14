@@ -1,4 +1,4 @@
-﻿using Fab.Client.Desktop.ViewModels;
+using Fab.Client.Desktop.ViewModels;
 using Fab.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,32 +8,33 @@ using System.Windows;
 namespace Fab.Client.Desktop;
 
 public partial class App : Application {
-	protected override async void OnStartup(StartupEventArgs e) {
-		FabGlobal.BuildHost(builder => builder
-			.ConfigureServices((context, services) => services
-				.AddTransient<TestService>()
-				.AddTransient<MainWindowViewModel>()
-			)
-			.ConfigureLogging((context, logging) => {
-				var env = context.HostingEnvironment;
-				var config = context.Configuration.GetSection("Logging");
-				// ...
-				logging.AddConfiguration(config);
-				logging.AddConsole();
-				// ...
-				logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
-			})
-		);
-		await FabGlobal.StartHost();
+	private IHost? _host;
 
-		Current.MainWindow = new MainWindow {
-			DataContext = FabGlobal.Services.GetService<MainWindowViewModel>()
-		};
-		Current.MainWindow.Show();
+	protected override async void OnStartup(StartupEventArgs e) {
+		base.OnStartup(e);
+
+		var builder = Host.CreateApplicationBuilder();
+		builder.ConfigureFab();
+		builder.Services.AddFabDatabaseFactory(builder.Configuration);
+		builder.Services.AddTransient<TestService>();
+		builder.Services.AddTransient<MainWindowViewModel>();
+		builder.Services.AddSingleton<MainWindow>();
+		builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
+		_host = builder.Build();
+		await _host.StartAsync();
+
+		var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+		mainWindow.DataContext = _host.Services.GetRequiredService<MainWindowViewModel>();
+		Current.MainWindow = mainWindow;
+		mainWindow.Show();
 	}
 
 	protected override async void OnExit(ExitEventArgs e) {
-		await FabGlobal.DestroyHost();
+		if (_host is not null) {
+			using (_host)
+				await _host.StopAsync(TimeSpan.FromSeconds(5));
+		}
 		base.OnExit(e);
 	}
 }
