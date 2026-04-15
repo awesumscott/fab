@@ -54,6 +54,32 @@ public class EditGenericModelViewModelTests {
 	}
 
 	[Fact]
+	public void ListAddOptions_ForEntries_IncludesEachContentSubclass() {
+		var article = new Article { Title = "T" };
+		var vm = new EditGenericModelViewModel(article);
+		var list = vm.Fields.OfType<EditListViewModel>().Single(l => l.Name == nameof(Article.Entries));
+
+		var labels = list.AddOptions.Select(o => o.Label).ToList();
+		labels.ShouldContain(nameof(Paragraph));
+		labels.ShouldContain(nameof(Image));
+	}
+
+	[Fact]
+	public void ListAdd_AppendsEntryWithCorrectContentType() {
+		var article = new Article { Title = "T" };
+		var vm = new EditGenericModelViewModel(article);
+		var list = vm.Fields.OfType<EditListViewModel>().Single(l => l.Name == nameof(Article.Entries));
+		var paragraphOption = list.AddOptions.Single(o => o.Label == nameof(Paragraph));
+
+		list.AddCommand.Execute(paragraphOption);
+
+		article.Entries.Count.ShouldBe(1);
+		article.Entries[0].Content.ShouldBeOfType<Paragraph>();
+		article.Entries[0].Order.ShouldBe(0);
+		list.Items.Count.ShouldBe(1);
+	}
+
+	[Fact]
 	public void BuildFields_RecursesIntoNestedUnique() {
 		var entry = new OrderedContentEntry(0, new Paragraph { Text = "nested" });
 

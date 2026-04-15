@@ -21,7 +21,7 @@ public class Unique : IUnique {
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(Paragraph), "paragraph")]
 [JsonDerivedType(typeof(Image), "image")]
-public class ContentBase : Unique {}
+public abstract class ContentBase : Unique {}
 
 public class Paragraph : ContentBase {
 	public string Text { get; set; } = string.Empty;

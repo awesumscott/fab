@@ -10,5 +10,20 @@
 	<StackPanel Margin="0,4">
 		<TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
 		<ItemsControl ItemsSource="{Binding Items}" Margin="12,2,0,0"/>
+		<ItemsControl ItemsSource="{Binding AddOptions}" Margin="12,4,0,0">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<StackPanel Orientation="Horizontal"/>
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<Button Margin="0,0,4,0" Padding="8,2"
+						Content="{Binding Label, StringFormat='Add {0}'}"
+						Command="{Binding DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+						CommandParameter="{Binding}"/>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 	</StackPanel>
 </UserControl>
