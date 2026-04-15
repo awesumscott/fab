@@ -371,6 +371,65 @@ public class EditGenericModelViewModelTests {
 	}
 
 	[Fact]
+	public void Redo_AfterUndo_ReappliesChange() {
+		var paragraph = new Paragraph { Text = "original" };
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(paragraph, undo: undo);
+		var field = vm.Fields.OfType<EditTextFieldViewModel>().Single();
+
+		field.Text = "edited";
+		undo.Undo();
+		paragraph.Text.ShouldBe("original");
+		undo.CanRedo.ShouldBeTrue();
+
+		undo.Redo().ShouldBeTrue();
+		paragraph.Text.ShouldBe("edited");
+		undo.CanRedo.ShouldBeFalse();
+		undo.CanUndo.ShouldBeTrue();
+	}
+
+	[Fact]
+	public void NewEdit_AfterUndo_ClearsRedoStack() {
+		var paragraph = new Paragraph { Text = "a" };
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(paragraph, undo: undo);
+		var field = vm.Fields.OfType<EditTextFieldViewModel>().Single();
+
+		field.Text = "ab";
+		undo.Undo();
+		undo.CanRedo.ShouldBeTrue();
+
+		// Wait past the coalesce window so the next push doesn't merge.
+		Thread.Sleep(2100);
+		field.Text = "ac";
+
+		undo.CanRedo.ShouldBeFalse();
+	}
+
+	[Fact]
+	public async Task Redo_DeleteList_RemovesAgain() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var confirmer = new StubConfirmationService(result: true);
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(article, confirmer, undo: undo);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+
+		await list.DeleteCommand.ExecuteAsync(list.Items[0]);
+		article.Entries.Count.ShouldBe(1);
+		undo.Undo();
+		article.Entries.Count.ShouldBe(2);
+
+		undo.Redo().ShouldBeTrue();
+		article.Entries.Count.ShouldBe(1);
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("B");
+	}
+
+	[Fact]
 	public void Summary_ReturnsFirstNonEmptyStringProperty() {
 		var p = new Paragraph { Text = "hello world" };
 		new EditGenericModelViewModel(p).Summary.ShouldBe("hello world");

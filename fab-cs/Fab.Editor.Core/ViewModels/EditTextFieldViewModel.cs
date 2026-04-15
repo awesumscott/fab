@@ -16,13 +16,19 @@ public sealed partial class EditTextFieldViewModel : ObservableObject, IEditable
 		get => _property.GetValue(_model)?.ToString() ?? string.Empty;
 		set {
 			var oldValue = Text;
-			if (oldValue == value) return;
+			var newValue = value;
+			if (oldValue == newValue) return;
 			OnPropertyChanging();
-			_property.SetValue(_model, value);
+			_property.SetValue(_model, newValue);
 			OnPropertyChanged();
 			_undo?.Push(new UndoAction(
 				Undo: () => {
 					_property.SetValue(_model, oldValue);
+					OnPropertyChanged(nameof(Text));
+					_onChanged?.Invoke();
+				},
+				Redo: () => {
+					_property.SetValue(_model, newValue);
 					OnPropertyChanged(nameof(Text));
 					_onChanged?.Invoke();
 				},

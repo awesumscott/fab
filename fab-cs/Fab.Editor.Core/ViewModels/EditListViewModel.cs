@@ -49,6 +49,12 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 				RebuildItems();
 				_onChanged?.Invoke();
 			},
+			Redo: () => {
+				list.Add(item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
 			Description: $"Add {_itemType.Name}"));
 		_onChanged?.Invoke();
 	}
@@ -73,6 +79,12 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 				RebuildItems();
 				_onChanged?.Invoke();
 			},
+			Redo: () => {
+				list.Remove(removed);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
 			Description: $"Delete {item.TypeName}"));
 		_onChanged?.Invoke();
 	}
@@ -93,6 +105,12 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 				RebuildItems();
 				_onChanged?.Invoke();
 			},
+			Redo: () => {
+				Swap(list, idx - 1, idx);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
 			Description: "Move up"));
 		_onChanged?.Invoke();
 	}
@@ -108,6 +126,12 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		RebuildItems();
 		_undo?.Push(new UndoAction(
 			Undo: () => {
+				Swap(list, idx, idx + 1);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Redo: () => {
 				Swap(list, idx, idx + 1);
 				RenumberOrder(list);
 				RebuildItems();
@@ -134,6 +158,13 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 				RebuildItems();
 				_onChanged?.Invoke();
 			},
+			Redo: () => {
+				list.Remove(item);
+				list.Add(item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
 			Description: "Move to end"));
 		_onChanged?.Invoke();
 	}
@@ -153,6 +184,13 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 			Undo: () => {
 				list.Remove(item);
 				list.Insert(srcIdx, item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Redo: () => {
+				list.Remove(item);
+				list.Insert(insertIdx, item);
 				RenumberOrder(list);
 				RebuildItems();
 				_onChanged?.Invoke();

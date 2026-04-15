@@ -10,12 +10,15 @@
 	mc:Ignorable="d">
 	<Window.InputBindings>
 		<KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}"/>
+		<KeyBinding Key="Y" Modifiers="Ctrl" Command="{Binding RedoCommand}"/>
+		<KeyBinding Key="Z" Modifiers="Ctrl+Shift" Command="{Binding RedoCommand}"/>
 	</Window.InputBindings>
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
 			<Button Content="New Article" Command="{Binding NewArticleCommand}" Padding="12,4" Margin="0,0,4,0"/>
 			<Button Content="Save" Command="{Binding SaveCommand}" Padding="12,4" Margin="0,0,4,0"/>
-			<Button Content="Undo" Command="{Binding UndoCommand}" Padding="12,4" ToolTip="Ctrl+Z"/>
+			<Button Content="Undo" Command="{Binding UndoCommand}" Padding="12,4" ToolTip="Ctrl+Z" Margin="0,0,4,0"/>
+			<Button Content="Redo" Command="{Binding RedoCommand}" Padding="12,4" ToolTip="Ctrl+Y"/>
 		</StackPanel>
 		<StatusBar DockPanel.Dock="Bottom">
 			<TextBlock Text="{Binding Status}"/>

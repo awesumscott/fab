@@ -26,6 +26,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 
 	public bool HasUnsavedChanges => Articles.Any(a => a.IsDirty);
 	public bool CanUndo => _undo.CanUndo;
+	public bool CanRedo => _undo.CanRedo;
 
 	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory, IConfirmationService? confirmation = null) {
 		_factory = factory;
@@ -35,7 +36,9 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		Articles.CollectionChanged += OnArticlesChanged;
 		_undo.Changed += (_, _) => {
 			OnPropertyChanged(nameof(CanUndo));
+			OnPropertyChanged(nameof(CanRedo));
 			UndoCommand.NotifyCanExecuteChanged();
+			RedoCommand.NotifyCanExecuteChanged();
 		};
 	}
 
@@ -124,6 +127,11 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[RelayCommand(CanExecute = nameof(CanUndo))]
 	private void Undo() {
 		_undo.Undo();
+	}
+
+	[RelayCommand(CanExecute = nameof(CanRedo))]
+	private void Redo() {
+		_undo.Redo();
 	}
 
 	public async Task<bool> ConfirmCloseAsync(CancellationToken cancellationToken = default) {
