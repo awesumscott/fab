@@ -74,6 +74,66 @@ use camelCase on the wire. [Accessibility]-marked fields (e.g.
 Image.alt) are omitted when the client requests ?accessibility=false.
 
 -----------------------
+ Content Entry Types
+-----------------------
+
+Each entry in an Article is an OrderedContentEntry wrapping a
+polymorphic ContentBase. Subclasses of ContentBase are the
+"kinds" an entry can be. Adding a new kind is additive — existing
+data stays valid; clients that don't recognize a kind can skip it
+or show a generic fallback. Wire discriminator is the lowercase
+type name.
+
+-Implemented
+	-Paragraph
+		-text: string
+	-Image
+		-url: string
+		-alt: string (accessibility-filterable)
+
+-Planned — tier 1 (high impact, low effort)
+	-Heading
+		-level: int (1–6)
+		-text: string
+	-Link
+		-url: string
+		-text: string
+		-isExternal: bool (client can treat internal vs. "open another
+			browser application" links differently per Plans.txt)
+	-Divider
+		-(no fields; structural marker)
+
+-Planned — tier 2 (medium)
+	-Quote
+		-text: string
+		-attribution: string (optional)
+	-Code
+		-text: string
+		-language: string (hint; client-side highlighter decides)
+	-Callout
+		-text: string
+		-kind: enum (Info / Warning / Tip)
+
+-Planned — tier 3 (larger)
+	-List
+		-items: List<OrderedContentEntry> (nested polymorphic content)
+		-ordered: bool
+	-AudioClip
+		-url: string
+		-alt: string (accessibility-filterable)
+	-VideoClip
+		-url: string
+		-alt: string (accessibility-filterable)
+		-thumbnailUrl: string (optional)
+	-Embed
+		-url: string
+		-mimeType: string (client decides how to render or whether
+			to show a fetch button, per the image trust model)
+	-Table
+		-rows, cells, etc. — full model TBD; skip unless a real
+			authoring need surfaces
+
+-----------------------
  Content Management
 -----------------------
 
