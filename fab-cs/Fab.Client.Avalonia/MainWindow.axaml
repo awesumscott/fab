@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:v="using:Fab.Client.Avalonia.Views"
+	xmlns:vm="using:Fab.Client.Core.ViewModels"
+	x:Class="Fab.Client.Avalonia.MainWindow"
+	x:DataType="vm:MainWindowViewModel"
+	Title="Fab browser" Width="800" Height="600">
+	<DockPanel>
+		<Border DockPanel.Dock="Bottom" Background="#FFE0E0" IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+			<TextBlock Text="{Binding ErrorMessage}" Foreground="DarkRed" Margin="8,4"/>
+		</Border>
+		<ProgressBar DockPanel.Dock="Top" IsIndeterminate="True" IsVisible="{Binding IsLoading}" Height="4"/>
+		<ScrollViewer>
+			<ContentControl Content="{Binding Article}" Margin="16"/>
+		</ScrollViewer>
+	</DockPanel>
+</Window>

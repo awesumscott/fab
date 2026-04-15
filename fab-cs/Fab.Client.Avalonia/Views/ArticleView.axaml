@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="using:Fab.Client.Core.ViewModels"
+	x:Class="Fab.Client.Avalonia.Views.ArticleView"
+	x:DataType="vm:ArticleViewModel">
+	<StackPanel Spacing="8">
+		<TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold"/>
+		<ItemsControl ItemsSource="{Binding Entries}"/>
+	</StackPanel>
+</UserControl>
