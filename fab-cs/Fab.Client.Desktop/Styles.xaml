@@ -22,4 +22,40 @@
 		<Setter Property="TextWrapping" Value="Wrap"/>
 	</Style>
 
+	<Style x:Key="HeadingH1Style" TargetType="TextBlock">
+		<Setter Property="FontSize" Value="28"/>
+		<Setter Property="FontWeight" Value="Bold"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style x:Key="HeadingH2Style" TargetType="TextBlock">
+		<Setter Property="FontSize" Value="22"/>
+		<Setter Property="FontWeight" Value="Bold"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style x:Key="HeadingH3Style" TargetType="TextBlock">
+		<Setter Property="FontSize" Value="18"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style x:Key="HeadingSubStyle" TargetType="TextBlock">
+		<Setter Property="FontSize" Value="14"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+
+	<Style x:Key="LinkTextStyle" TargetType="TextBlock">
+		<Setter Property="Foreground" Value="#1E6FBF"/>
+		<Setter Property="TextDecorations" Value="Underline"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style x:Key="LinkUrlStyle" TargetType="TextBlock">
+		<Setter Property="Foreground" Value="{StaticResource MutedTextBrush}"/>
+		<Setter Property="FontSize" Value="11"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+
+	<Style x:Key="DividerStyle" TargetType="Separator">
+		<Setter Property="Margin" Value="0,8"/>
+	</Style>
+
 </ResourceDictionary>

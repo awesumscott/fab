@@ -12,6 +12,12 @@
 			<DataTemplate DataType="{x:Type vm:EditTextFieldViewModel}">
 				<v:EditTextView/>
 			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:EditIntFieldViewModel}">
+				<v:EditIntView/>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:EditBoolFieldViewModel}">
+				<v:EditBoolView/>
+			</DataTemplate>
 			<DataTemplate DataType="{x:Type vm:EditListViewModel}">
 				<v:EditListView/>
 			</DataTemplate>

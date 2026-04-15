@@ -18,6 +18,15 @@
 		<DataTemplate DataType="vm:ImageViewModel">
 			<v:ImageView/>
 		</DataTemplate>
+		<DataTemplate DataType="vm:HeadingViewModel">
+			<v:HeadingView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:LinkViewModel">
+			<v:LinkView/>
+		</DataTemplate>
+		<DataTemplate DataType="vm:DividerViewModel">
+			<v:DividerView/>
+		</DataTemplate>
 	</Application.DataTemplates>
 
 	<Application.Styles>

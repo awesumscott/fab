@@ -21,6 +21,9 @@ public class Unique : IUnique {
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(Paragraph), "paragraph")]
 [JsonDerivedType(typeof(Image), "image")]
+[JsonDerivedType(typeof(Heading), "heading")]
+[JsonDerivedType(typeof(Link), "link")]
+[JsonDerivedType(typeof(Divider), "divider")]
 public abstract class ContentBase : Unique {}
 
 public class Paragraph : ContentBase {
@@ -31,6 +34,19 @@ public class Image : ContentBase {
 	public string Url { get; set; } = string.Empty;
 	[Accessibility] public string Alt { get; set; } = string.Empty;
 }
+
+public class Heading : ContentBase {
+	public int Level { get; set; } = 1;
+	public string Text { get; set; } = string.Empty;
+}
+
+public class Link : ContentBase {
+	public string Text { get; set; } = string.Empty;
+	public string Url { get; set; } = string.Empty;
+	public bool IsExternal { get; set; }
+}
+
+public class Divider : ContentBase {}
 
 public class Article : Unique {
 	public string Title { get; set; } = string.Empty;

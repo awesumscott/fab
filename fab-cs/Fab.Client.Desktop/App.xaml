@@ -22,6 +22,15 @@
 			<DataTemplate DataType="{x:Type vm:ImageViewModel}">
 				<v:ImageView/>
 			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:HeadingViewModel}">
+				<v:HeadingView/>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:LinkViewModel}">
+				<v:LinkView/>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:DividerViewModel}">
+				<v:DividerView/>
+			</DataTemplate>
 		</ResourceDictionary>
 	</Application.Resources>
 </Application>
