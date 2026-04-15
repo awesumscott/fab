@@ -80,6 +80,95 @@ public class EditGenericModelViewModelTests {
 	}
 
 	[Fact]
+	public void ListDelete_RemovesEntryAndRenumbers() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+				new(2, new Paragraph { Text = "C" }),
+			}
+		};
+		var list = ListOf(article);
+
+		list.DeleteCommand.Execute(list.Items[1]); // remove B
+
+		article.Entries.Count.ShouldBe(2);
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("A");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("C");
+		article.Entries[0].Order.ShouldBe(0);
+		article.Entries[1].Order.ShouldBe(1);
+	}
+
+	[Fact]
+	public void ListMoveUp_SwapsAndRenumbers() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var list = ListOf(article);
+
+		list.MoveUpCommand.Execute(list.Items[1]); // move B up
+
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("B");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("A");
+		article.Entries[0].Order.ShouldBe(0);
+		article.Entries[1].Order.ShouldBe(1);
+	}
+
+	[Fact]
+	public void ListMoveDown_SwapsAndRenumbers() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var list = ListOf(article);
+
+		list.MoveDownCommand.Execute(list.Items[0]); // move A down
+
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("B");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("A");
+	}
+
+	[Fact]
+	public void ListMoveUp_OnFirstItem_IsNoOp() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var list = ListOf(article);
+
+		list.MoveUpCommand.Execute(list.Items[0]);
+
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("A");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("B");
+	}
+
+	[Fact]
+	public void ListMoveDown_OnLastItem_IsNoOp() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var list = ListOf(article);
+
+		list.MoveDownCommand.Execute(list.Items[1]);
+
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("A");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("B");
+	}
+
+	private static EditListViewModel ListOf(Article article) =>
+		new EditGenericModelViewModel(article).Fields.OfType<EditListViewModel>().Single(l => l.Name == nameof(Article.Entries));
+
+	[Fact]
 	public void BuildFields_RecursesIntoNestedUnique() {
 		var entry = new OrderedContentEntry(0, new Paragraph { Text = "nested" });
 

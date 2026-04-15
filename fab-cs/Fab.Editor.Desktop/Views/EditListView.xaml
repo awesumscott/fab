@@ -9,7 +9,26 @@
 	d:DataContext="{d:DesignInstance vm:EditListViewModel}">
 	<StackPanel Margin="0,4">
 		<TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-		<ItemsControl ItemsSource="{Binding Items}" Margin="12,2,0,0"/>
+		<ItemsControl ItemsSource="{Binding Items}" Margin="12,2,0,0">
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<DockPanel Margin="0,2">
+						<StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="4,0,0,0">
+							<Button Content="&#x2191;" Width="24" Height="24" ToolTip="Move up"
+								Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+								CommandParameter="{Binding}"/>
+							<Button Content="&#x2193;" Width="24" Height="24" ToolTip="Move down" Margin="2,0,0,0"
+								Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+								CommandParameter="{Binding}"/>
+							<Button Content="&#x00D7;" Width="24" Height="24" ToolTip="Delete" Margin="2,0,0,0"
+								Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+								CommandParameter="{Binding}"/>
+						</StackPanel>
+						<ContentPresenter Content="{Binding}"/>
+					</DockPanel>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 		<ItemsControl ItemsSource="{Binding AddOptions}" Margin="12,4,0,0">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>

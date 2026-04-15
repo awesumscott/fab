@@ -32,8 +32,39 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		if (_property.GetValue(_model) is not IList list) return;
 
 		var item = option.Create();
-		TrySetOrder(item, list.Count);
 		list.Add(item);
+		RenumberOrder(list);
+		RebuildItems();
+	}
+
+	[RelayCommand]
+	private void Delete(EditGenericModelViewModel? item) {
+		if (item is null) return;
+		if (_property.GetValue(_model) is not IList list) return;
+		list.Remove(item.Model);
+		RenumberOrder(list);
+		RebuildItems();
+	}
+
+	[RelayCommand]
+	private void MoveUp(EditGenericModelViewModel? item) {
+		if (item is null) return;
+		if (_property.GetValue(_model) is not IList list) return;
+		var idx = list.IndexOf(item.Model);
+		if (idx <= 0) return;
+		(list[idx - 1], list[idx]) = (list[idx], list[idx - 1]);
+		RenumberOrder(list);
+		RebuildItems();
+	}
+
+	[RelayCommand]
+	private void MoveDown(EditGenericModelViewModel? item) {
+		if (item is null) return;
+		if (_property.GetValue(_model) is not IList list) return;
+		var idx = list.IndexOf(item.Model);
+		if (idx < 0 || idx >= list.Count - 1) return;
+		(list[idx], list[idx + 1]) = (list[idx + 1], list[idx]);
+		RenumberOrder(list);
 		RebuildItems();
 	}
 
@@ -77,9 +108,13 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	private static bool HasParameterlessCtor(Type type) =>
 		type.GetConstructor(Type.EmptyTypes) is not null;
 
-	private static void TrySetOrder(object item, int order) {
-		var orderProp = item.GetType().GetProperty("Order");
-		if (orderProp?.PropertyType == typeof(int) && orderProp.CanWrite)
-			orderProp.SetValue(item, order);
+	private static void RenumberOrder(IList list) {
+		for (int i = 0; i < list.Count; i++) {
+			var item = list[i];
+			if (item is null) continue;
+			var orderProp = item.GetType().GetProperty("Order");
+			if (orderProp?.PropertyType == typeof(int) && orderProp.CanWrite)
+				orderProp.SetValue(item, i);
+		}
 	}
 }
