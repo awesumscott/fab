@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Fab.Editor.Core.ViewModels;
 
 public sealed partial class EditorMainWindowViewModel : ObservableObject, IDisposable {
-	private readonly CmsWorkingDbContext _db;
+	private readonly IDbContextFactory<CmsWorkingDbContext> _factory;
+	private CmsWorkingDbContext _db;
 
 	public ObservableCollection<ArticleListItemViewModel> Articles { get; } = [];
 
@@ -19,6 +20,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[ObservableProperty] private string _title = "Fab CMS Editor";
 
 	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory) {
+		_factory = factory;
 		_db = factory.CreateDbContext();
 		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
 	}
@@ -41,9 +43,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 				: $"Loaded {Articles.Count} article(s)";
 		}
 		catch (Exception ex) {
-			Status = $"Load failed: {ex.Message}";
-			Articles.Clear();
-			Editor = null;
+			HandleFailure("Load", ex);
 		}
 		finally {
 			IsBusy = false;
@@ -69,7 +69,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 			Status = $"Created article #{article.Id}";
 		}
 		catch (Exception ex) {
-			Status = $"Create failed: {ex.Message}";
+			HandleFailure("Create", ex);
 		}
 		finally {
 			IsBusy = false;
@@ -86,11 +86,24 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 			Status = $"Saved article #{SelectedArticle.Id}";
 		}
 		catch (Exception ex) {
-			Status = $"Save failed: {ex.Message}";
+			HandleFailure("Save", ex);
 		}
 		finally {
 			IsBusy = false;
 		}
+	}
+
+	private void HandleFailure(string operation, Exception ex) {
+		Status = $"{operation} failed — reloading: {ex.Message}";
+		// EF can leave the context in an unrecoverable state after a failed
+		// SaveChanges/query. Drop it and rebuild so the next operation has
+		// a clean slate, then re-Load so the UI reflects persisted state
+		// instead of stale references to the disposed context's entities.
+		// Unsaved in-memory edits are intentionally lost — recovering them
+		// would require re-applying field-by-field against a fresh graph.
+		try { _db.Dispose(); } catch { }
+		_db = _factory.CreateDbContext();
+		_ = LoadAsync();
 	}
 
 	public void Dispose() => _db.Dispose();
