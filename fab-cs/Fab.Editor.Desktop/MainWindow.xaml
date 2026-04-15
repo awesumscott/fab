@@ -16,7 +16,7 @@
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
 			<Button Content="New Article" Command="{Binding NewArticleCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
-			<Button Content="&#xE78C;" ToolTip="Save all modified articles" Command="{Binding SaveCommand}" Style="{StaticResource IconToolbarButtonStyle}"/>
+			<Button Content="&#xE74E;" ToolTip="Save all modified articles" Command="{Binding SaveCommand}" Style="{StaticResource IconToolbarButtonStyle}"/>
 			<Button Content="Undo" Command="{Binding UndoCommand}" ToolTip="Ctrl+Z" Style="{StaticResource ToolbarButtonStyle}"/>
 			<Button Content="Redo" Command="{Binding RedoCommand}" ToolTip="Ctrl+Y" Style="{StaticResource ToolbarButtonStyle}"/>
 		</StackPanel>
