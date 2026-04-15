@@ -1,5 +1,6 @@
 using Fab.Core;
 using Fab.Editor.Core;
+using Fab.Editor.Core.Services;
 using Fab.Editor.Core.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,6 +18,7 @@ public partial class App : Application {
 		var builder = Host.CreateApplicationBuilder();
 		builder.ConfigureFab();
 		builder.Services.AddFabEditor(builder.Configuration);
+		builder.Services.AddSingleton<IConfirmationService, MessageBoxConfirmationService>();
 		builder.Services.AddSingleton<MainWindow>();
 
 		_host = builder.Build();

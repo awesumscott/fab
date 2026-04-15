@@ -3,6 +3,7 @@ using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fab.Data;
+using Fab.Editor.Core.Services;
 
 namespace Fab.Editor.Core.ViewModels;
 
@@ -12,16 +13,18 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	private readonly object _model;
 	private readonly PropertyInfo _property;
 	private readonly Type _itemType;
+	private readonly IConfirmationService? _confirmation;
 
 	public string Name => _property.Name;
 
 	[ObservableProperty] private List<IEditableField> _items = [];
 	public IReadOnlyList<AddOption> AddOptions { get; }
 
-	public EditListViewModel(object model, PropertyInfo property) {
+	public EditListViewModel(object model, PropertyInfo property, IConfirmationService? confirmation = null) {
 		_model = model;
 		_property = property;
 		_itemType = property.PropertyType.GetGenericArguments()[0];
+		_confirmation = confirmation;
 		AddOptions = BuildAddOptions(_itemType);
 		RebuildItems();
 	}
@@ -38,8 +41,12 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	}
 
 	[RelayCommand]
-	private void Delete(EditGenericModelViewModel? item) {
+	private async Task DeleteAsync(EditGenericModelViewModel? item) {
 		if (item is null) return;
+		if (_confirmation is not null) {
+			var ok = await _confirmation.ConfirmAsync($"Delete this {item.TypeName}?");
+			if (!ok) return;
+		}
 		if (_property.GetValue(_model) is not IList list) return;
 		list.Remove(item.Model);
 		RenumberOrder(list);
@@ -68,17 +75,27 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		RebuildItems();
 	}
 
+	public void MoveBefore(EditGenericModelViewModel source, EditGenericModelViewModel target) {
+		if (_property.GetValue(_model) is not IList list) return;
+		var srcIdx = list.IndexOf(source.Model);
+		var tgtIdx = list.IndexOf(target.Model);
+		if (srcIdx < 0 || tgtIdx < 0 || srcIdx == tgtIdx) return;
+		var item = list[srcIdx]!;
+		list.RemoveAt(srcIdx);
+		if (srcIdx < tgtIdx) tgtIdx--;
+		list.Insert(tgtIdx, item);
+		RenumberOrder(list);
+		RebuildItems();
+	}
+
 	private void RebuildItems() {
 		if (_property.GetValue(_model) is not IEnumerable list) return;
 		Items = list.OfType<object>()
-			.Select(item => (IEditableField)new EditGenericModelViewModel(item))
+			.Select(item => (IEditableField)new EditGenericModelViewModel(item, _confirmation))
 			.ToList();
 	}
 
 	internal static IReadOnlyList<AddOption> BuildAddOptions(Type itemType) {
-		// Pattern: a concrete "wrapper" item (e.g. OrderedContentEntry) with
-		// exactly one abstract IUnique property (e.g. Content : ContentBase)
-		// — surface one option per concrete subclass of that abstract type.
 		var abstractChildProp = itemType.GetProperties()
 			.Where(p => p.PropertyType.IsAbstract && typeof(IUnique).IsAssignableFrom(p.PropertyType))
 			.SingleOrDefault();

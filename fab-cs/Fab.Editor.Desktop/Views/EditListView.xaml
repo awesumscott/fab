@@ -12,7 +12,15 @@
 		<ItemsControl ItemsSource="{Binding Items}" Margin="12,2,0,0">
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<DockPanel Margin="0,2">
+					<DockPanel Margin="0,2"
+						AllowDrop="True"
+						DragOver="ItemRoot_DragOver"
+						Drop="ItemRoot_Drop">
+						<Border DockPanel.Dock="Left" Width="12" Margin="0,0,4,0"
+							Background="#D0D0D0" Cursor="SizeAll"
+							ToolTip="Drag to reorder"
+							PreviewMouseLeftButtonDown="Handle_PreviewMouseLeftButtonDown"
+							PreviewMouseMove="Handle_PreviewMouseMove"/>
 						<StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="4,0,0,0">
 							<Button Content="&#x2191;" Width="24" Height="24" ToolTip="Move up"
 								Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Fab.Data;
+using Fab.Editor.Core.Services;
 
 namespace Fab.Editor.Core.ViewModels;
 
@@ -9,12 +10,12 @@ public sealed partial class EditGenericModelViewModel : ObservableObject, IEdita
 
 	[ObservableProperty] private List<IEditableField> _fields = [];
 
-	public EditGenericModelViewModel(object model) {
+	public EditGenericModelViewModel(object model, IConfirmationService? confirmation = null) {
 		Model = model;
-		Fields = BuildFields(model);
+		Fields = BuildFields(model, confirmation);
 	}
 
-	public static List<IEditableField> BuildFields(object model) {
+	public static List<IEditableField> BuildFields(object model, IConfirmationService? confirmation = null) {
 		var fields = new List<IEditableField>();
 		foreach (var property in model.GetType().GetProperties()) {
 			var type = property.PropertyType;
@@ -22,12 +23,12 @@ public sealed partial class EditGenericModelViewModel : ObservableObject, IEdita
 				fields.Add(new EditTextFieldViewModel(model, property));
 			}
 			else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
-				fields.Add(new EditListViewModel(model, property));
+				fields.Add(new EditListViewModel(model, property, confirmation));
 			}
 			else if (typeof(IUnique).IsAssignableFrom(type)) {
 				var nested = property.GetValue(model);
 				if (nested is not null)
-					fields.Add(new EditGenericModelViewModel(nested));
+					fields.Add(new EditGenericModelViewModel(nested, confirmation));
 			}
 		}
 		return fields;

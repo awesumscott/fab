@@ -3,12 +3,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fab.Core;
 using Fab.Data;
+using Fab.Editor.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Fab.Editor.Core.ViewModels;
 
 public sealed partial class EditorMainWindowViewModel : ObservableObject, IDisposable {
 	private readonly IDbContextFactory<CmsWorkingDbContext> _factory;
+	private readonly IConfirmationService? _confirmation;
 	private CmsWorkingDbContext _db;
 
 	public ObservableCollection<ArticleListItemViewModel> Articles { get; } = [];
@@ -19,8 +21,9 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[ObservableProperty] private bool _isBusy;
 	[ObservableProperty] private string _title = "Fab CMS Editor";
 
-	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory) {
+	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory, IConfirmationService? confirmation = null) {
 		_factory = factory;
+		_confirmation = confirmation;
 		_db = factory.CreateDbContext();
 		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
 	}
@@ -51,7 +54,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	}
 
 	partial void OnSelectedArticleChanged(ArticleListItemViewModel? value) {
-		Editor = value is null ? null : new EditGenericModelViewModel(value.Article);
+		Editor = value is null ? null : new EditGenericModelViewModel(value.Article, _confirmation);
 	}
 
 	[RelayCommand]

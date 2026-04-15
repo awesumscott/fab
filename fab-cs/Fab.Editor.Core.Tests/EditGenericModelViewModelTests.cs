@@ -1,4 +1,5 @@
 using Fab.Data;
+using Fab.Editor.Core.Services;
 using Fab.Editor.Core.ViewModels;
 using Shouldly;
 
@@ -165,8 +166,76 @@ public class EditGenericModelViewModelTests {
 		((Paragraph)article.Entries[1].Content).Text.ShouldBe("B");
 	}
 
-	private static EditListViewModel ListOf(Article article) =>
-		new EditGenericModelViewModel(article).Fields.OfType<EditListViewModel>().Single(l => l.Name == nameof(Article.Entries));
+	private static EditListViewModel ListOf(Article article, IConfirmationService? confirmation = null) =>
+		new EditGenericModelViewModel(article, confirmation).Fields.OfType<EditListViewModel>().Single(l => l.Name == nameof(Article.Entries));
+
+	[Fact]
+	public async Task Delete_PromptsConfirmation_AndDeclineKeepsItem() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var confirmer = new StubConfirmationService(result: false);
+		var list = ListOf(article, confirmer);
+
+		await list.DeleteCommand.ExecuteAsync(list.Items[0]);
+
+		confirmer.CallCount.ShouldBe(1);
+		article.Entries.Count.ShouldBe(2);
+	}
+
+	[Fact]
+	public async Task Delete_Confirmed_RemovesItem() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+			}
+		};
+		var confirmer = new StubConfirmationService(result: true);
+		var list = ListOf(article, confirmer);
+
+		await list.DeleteCommand.ExecuteAsync(list.Items[0]);
+
+		confirmer.CallCount.ShouldBe(1);
+		article.Entries.Count.ShouldBe(1);
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("B");
+	}
+
+	[Fact]
+	public void MoveBefore_ReordersAndRenumbers() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+				new(2, new Paragraph { Text = "C" }),
+			}
+		};
+		var list = ListOf(article);
+		var source = (EditGenericModelViewModel)list.Items[2];
+		var target = (EditGenericModelViewModel)list.Items[0];
+
+		list.MoveBefore(source, target);
+
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("C");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("A");
+		((Paragraph)article.Entries[2].Content).Text.ShouldBe("B");
+		article.Entries[0].Order.ShouldBe(0);
+		article.Entries[1].Order.ShouldBe(1);
+		article.Entries[2].Order.ShouldBe(2);
+	}
+
+	private sealed class StubConfirmationService : IConfirmationService {
+		private readonly bool _result;
+		public int CallCount { get; private set; }
+		public StubConfirmationService(bool result) => _result = result;
+		public Task<bool> ConfirmAsync(string message, string title = "Confirm") {
+			CallCount++;
+			return Task.FromResult(_result);
+		}
+	}
 
 	[Fact]
 	public void BuildFields_RecursesIntoNestedUnique() {
