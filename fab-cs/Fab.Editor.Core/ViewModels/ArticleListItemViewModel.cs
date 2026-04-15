@@ -8,6 +8,9 @@ public sealed partial class ArticleListItemViewModel : ObservableObject {
 	public int Id => Article.Id;
 
 	[ObservableProperty] private string _title = string.Empty;
+	[ObservableProperty] private bool _isDirty;
+
+	public string DisplayTitle => IsDirty ? $"{Title} *" : Title;
 
 	public ArticleListItemViewModel(Article article) {
 		Article = article;
@@ -16,4 +19,7 @@ public sealed partial class ArticleListItemViewModel : ObservableObject {
 
 	public void RefreshTitle() =>
 		Title = string.IsNullOrWhiteSpace(Article.Title) ? "(untitled)" : Article.Title;
+
+	partial void OnTitleChanged(string value) => OnPropertyChanged(nameof(DisplayTitle));
+	partial void OnIsDirtyChanged(bool value) => OnPropertyChanged(nameof(DisplayTitle));
 }

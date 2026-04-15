@@ -54,7 +54,13 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	}
 
 	partial void OnSelectedArticleChanged(ArticleListItemViewModel? value) {
-		Editor = value is null ? null : new EditGenericModelViewModel(value.Article, _confirmation);
+		Editor = value is null
+			? null
+			: new EditGenericModelViewModel(value.Article, _confirmation, () => MarkDirty(value));
+	}
+
+	private void MarkDirty(ArticleListItemViewModel item) {
+		item.IsDirty = true;
 	}
 
 	[RelayCommand]
@@ -86,6 +92,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		try {
 			await _db.SaveChangesAsync(cancellationToken);
 			SelectedArticle.RefreshTitle();
+			SelectedArticle.IsDirty = false;
 			Status = $"Saved article #{SelectedArticle.Id}";
 		}
 		catch (Exception ex) {

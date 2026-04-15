@@ -25,7 +25,7 @@
 			<ListBox Grid.Column="0"
 				ItemsSource="{Binding Articles}"
 				SelectedItem="{Binding SelectedArticle, Mode=TwoWay}"
-				DisplayMemberPath="Title"
+				DisplayMemberPath="DisplayTitle"
 				Margin="4"/>
 			<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="LightGray"/>
 			<ScrollViewer Grid.Column="2">

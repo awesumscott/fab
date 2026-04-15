@@ -238,6 +238,46 @@ public class EditGenericModelViewModelTests {
 	}
 
 	[Fact]
+	public void OnChanged_FiresWhenTextFieldIsModified() {
+		var paragraph = new Paragraph { Text = "original" };
+		int count = 0;
+		var vm = new EditGenericModelViewModel(paragraph, onChanged: () => count++);
+
+		vm.Fields.OfType<EditTextFieldViewModel>().Single().Text = "new";
+
+		count.ShouldBe(1);
+	}
+
+	[Fact]
+	public void OnChanged_FiresForNestedTextEdit() {
+		var article = new Article {
+			Entries = { new(0, new Paragraph { Text = "A" }) }
+		};
+		int count = 0;
+		var vm = new EditGenericModelViewModel(article, onChanged: () => count++);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+		var entry = (EditGenericModelViewModel)list.Items[0];
+		var contentEditor = entry.Fields.OfType<EditGenericModelViewModel>().Single();
+		var text = contentEditor.Fields.OfType<EditTextFieldViewModel>().Single();
+
+		text.Text = "updated";
+
+		count.ShouldBe(1);
+	}
+
+	[Fact]
+	public void OnChanged_FiresOnListAdd() {
+		var article = new Article();
+		int count = 0;
+		var vm = new EditGenericModelViewModel(article, onChanged: () => count++);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+
+		list.AddCommand.Execute(list.AddOptions.First());
+
+		count.ShouldBe(1);
+	}
+
+	[Fact]
 	public void BuildFields_RecursesIntoNestedUnique() {
 		var entry = new OrderedContentEntry(0, new Paragraph { Text = "nested" });
 

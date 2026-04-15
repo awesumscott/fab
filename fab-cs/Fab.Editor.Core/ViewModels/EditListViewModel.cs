@@ -14,17 +14,19 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	private readonly PropertyInfo _property;
 	private readonly Type _itemType;
 	private readonly IConfirmationService? _confirmation;
+	private readonly Action? _onChanged;
 
 	public string Name => _property.Name;
 
 	[ObservableProperty] private List<IEditableField> _items = [];
 	public IReadOnlyList<AddOption> AddOptions { get; }
 
-	public EditListViewModel(object model, PropertyInfo property, IConfirmationService? confirmation = null) {
+	public EditListViewModel(object model, PropertyInfo property, IConfirmationService? confirmation = null, Action? onChanged = null) {
 		_model = model;
 		_property = property;
 		_itemType = property.PropertyType.GetGenericArguments()[0];
 		_confirmation = confirmation;
+		_onChanged = onChanged;
 		AddOptions = BuildAddOptions(_itemType);
 		RebuildItems();
 	}
@@ -38,6 +40,7 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		list.Add(item);
 		RenumberOrder(list);
 		RebuildItems();
+		_onChanged?.Invoke();
 	}
 
 	[RelayCommand]
@@ -51,6 +54,7 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		list.Remove(item.Model);
 		RenumberOrder(list);
 		RebuildItems();
+		_onChanged?.Invoke();
 	}
 
 	[RelayCommand]
@@ -62,6 +66,7 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		(list[idx - 1], list[idx]) = (list[idx], list[idx - 1]);
 		RenumberOrder(list);
 		RebuildItems();
+		_onChanged?.Invoke();
 	}
 
 	[RelayCommand]
@@ -73,6 +78,7 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		(list[idx], list[idx + 1]) = (list[idx + 1], list[idx]);
 		RenumberOrder(list);
 		RebuildItems();
+		_onChanged?.Invoke();
 	}
 
 	public void MoveBefore(EditGenericModelViewModel source, EditGenericModelViewModel target) {
@@ -86,12 +92,13 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		list.Insert(tgtIdx, item);
 		RenumberOrder(list);
 		RebuildItems();
+		_onChanged?.Invoke();
 	}
 
 	private void RebuildItems() {
 		if (_property.GetValue(_model) is not IEnumerable list) return;
 		Items = list.OfType<object>()
-			.Select(item => (IEditableField)new EditGenericModelViewModel(item, _confirmation))
+			.Select(item => (IEditableField)new EditGenericModelViewModel(item, _confirmation, _onChanged))
 			.ToList();
 	}
 
