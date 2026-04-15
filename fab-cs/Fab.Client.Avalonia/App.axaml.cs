@@ -18,8 +18,9 @@ public partial class App : Application {
 	public override async void OnFrameworkInitializationCompleted() {
 		var builder = Host.CreateApplicationBuilder();
 		builder.Configuration
-			.SetBasePath(Directory.GetCurrentDirectory())
-			.AddJsonFile("fab.json", optional: true, reloadOnChange: true);
+			.SetBasePath(AppContext.BaseDirectory)
+			.AddJsonFile("fab.json", optional: true, reloadOnChange: true)
+			.AddEnvironmentVariables();
 
 		builder.Services.AddFabClient(builder.Configuration);
 		builder.Services.AddSingleton<MainWindow>();
