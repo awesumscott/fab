@@ -13,6 +13,9 @@ public partial class OrderedContentEntryViewModel : ObservableObject, IFabRender
 		Content = entry.Content switch {
 			Paragraph p => new ParagraphViewModel(p),
 			Image i => new ImageViewModel(i),
+			Heading h => new HeadingViewModel(h),
+			Link l => new LinkViewModel(l),
+			Divider d => new DividerViewModel(d),
 			null => null,
 			_ => LogAndNull(entry.Content),
 		};

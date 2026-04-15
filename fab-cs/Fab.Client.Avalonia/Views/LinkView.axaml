@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="using:Fab.Client.Core.ViewModels"
+	x:Class="Fab.Client.Avalonia.Views.LinkView"
+	x:DataType="vm:LinkViewModel">
+	<StackPanel>
+		<TextBlock Text="{Binding Text}" Foreground="#1E6FBF" TextDecorations="Underline" TextWrapping="Wrap"/>
+		<TextBlock Text="{Binding Url}" Foreground="Gray" FontSize="11" TextWrapping="Wrap"/>
+	</StackPanel>
+</UserControl>

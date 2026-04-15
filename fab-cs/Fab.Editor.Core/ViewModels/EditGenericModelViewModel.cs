@@ -38,6 +38,12 @@ public sealed partial class EditGenericModelViewModel : ObservableObject, IEdita
 			if (type == typeof(string)) {
 				fields.Add(new EditTextFieldViewModel(model, property, onChanged, undo));
 			}
+			else if (type == typeof(int)) {
+				fields.Add(new EditIntFieldViewModel(model, property, onChanged, undo));
+			}
+			else if (type == typeof(bool)) {
+				fields.Add(new EditBoolFieldViewModel(model, property, onChanged, undo));
+			}
 			else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
 				fields.Add(new EditListViewModel(model, property, confirmation, onChanged, undo));
 			}
