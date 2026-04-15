@@ -15,18 +15,20 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	private readonly Type _itemType;
 	private readonly IConfirmationService? _confirmation;
 	private readonly Action? _onChanged;
+	private readonly UndoService? _undo;
 
 	public string Name => _property.Name;
 
 	[ObservableProperty] private List<IEditableField> _items = [];
 	public IReadOnlyList<AddOption> AddOptions { get; }
 
-	public EditListViewModel(object model, PropertyInfo property, IConfirmationService? confirmation = null, Action? onChanged = null) {
+	public EditListViewModel(object model, PropertyInfo property, IConfirmationService? confirmation = null, Action? onChanged = null, UndoService? undo = null) {
 		_model = model;
 		_property = property;
 		_itemType = property.PropertyType.GetGenericArguments()[0];
 		_confirmation = confirmation;
 		_onChanged = onChanged;
+		_undo = undo;
 		AddOptions = BuildAddOptions(_itemType);
 		RebuildItems();
 	}
@@ -40,6 +42,14 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		list.Add(item);
 		RenumberOrder(list);
 		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				list.Remove(item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: $"Add {_itemType.Name}"));
 		_onChanged?.Invoke();
 	}
 
@@ -47,13 +57,23 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 	private async Task DeleteAsync(EditGenericModelViewModel? item) {
 		if (item is null) return;
 		if (_confirmation is not null) {
-			var ok = await _confirmation.ConfirmAsync($"Delete this {item.TypeName}?");
+			var ok = await _confirmation.ConfirmAsync($"Delete this {item.TypeName}?\n\n\"{item.Summary}\"");
 			if (!ok) return;
 		}
 		if (_property.GetValue(_model) is not IList list) return;
-		list.Remove(item.Model);
+		var originalIndex = list.IndexOf(item.Model);
+		var removed = item.Model;
+		list.Remove(removed);
 		RenumberOrder(list);
 		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				list.Insert(originalIndex, removed);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: $"Delete {item.TypeName}"));
 		_onChanged?.Invoke();
 	}
 
@@ -63,9 +83,17 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		if (_property.GetValue(_model) is not IList list) return;
 		var idx = list.IndexOf(item.Model);
 		if (idx <= 0) return;
-		(list[idx - 1], list[idx]) = (list[idx], list[idx - 1]);
+		Swap(list, idx - 1, idx);
 		RenumberOrder(list);
 		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				Swap(list, idx - 1, idx);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: "Move up"));
 		_onChanged?.Invoke();
 	}
 
@@ -75,9 +103,38 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		if (_property.GetValue(_model) is not IList list) return;
 		var idx = list.IndexOf(item.Model);
 		if (idx < 0 || idx >= list.Count - 1) return;
-		(list[idx], list[idx + 1]) = (list[idx + 1], list[idx]);
+		Swap(list, idx, idx + 1);
 		RenumberOrder(list);
 		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				Swap(list, idx, idx + 1);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: "Move down"));
+		_onChanged?.Invoke();
+	}
+
+	public void MoveToEnd(EditGenericModelViewModel source) {
+		if (_property.GetValue(_model) is not IList list) return;
+		var srcIdx = list.IndexOf(source.Model);
+		if (srcIdx < 0 || srcIdx == list.Count - 1) return;
+		var item = list[srcIdx]!;
+		list.RemoveAt(srcIdx);
+		list.Add(item);
+		RenumberOrder(list);
+		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				list.Remove(item);
+				list.Insert(srcIdx, item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: "Move to end"));
 		_onChanged?.Invoke();
 	}
 
@@ -88,17 +145,26 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 		if (srcIdx < 0 || tgtIdx < 0 || srcIdx == tgtIdx) return;
 		var item = list[srcIdx]!;
 		list.RemoveAt(srcIdx);
-		if (srcIdx < tgtIdx) tgtIdx--;
-		list.Insert(tgtIdx, item);
+		var insertIdx = srcIdx < tgtIdx ? tgtIdx - 1 : tgtIdx;
+		list.Insert(insertIdx, item);
 		RenumberOrder(list);
 		RebuildItems();
+		_undo?.Push(new UndoAction(
+			Undo: () => {
+				list.Remove(item);
+				list.Insert(srcIdx, item);
+				RenumberOrder(list);
+				RebuildItems();
+				_onChanged?.Invoke();
+			},
+			Description: "Reorder"));
 		_onChanged?.Invoke();
 	}
 
 	private void RebuildItems() {
 		if (_property.GetValue(_model) is not IEnumerable list) return;
 		Items = list.OfType<object>()
-			.Select(item => (IEditableField)new EditGenericModelViewModel(item, _confirmation, _onChanged))
+			.Select(item => (IEditableField)new EditGenericModelViewModel(item, _confirmation, _onChanged, _undo))
 			.ToList();
 	}
 
@@ -141,4 +207,7 @@ public sealed partial class EditListViewModel : ObservableObject, IEditableField
 				orderProp.SetValue(item, i);
 		}
 	}
+
+	private static void Swap(IList list, int a, int b) =>
+		(list[a], list[b]) = (list[b], list[a]);
 }

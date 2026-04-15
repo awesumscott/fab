@@ -8,10 +8,14 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d">
+	<Window.InputBindings>
+		<KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}"/>
+	</Window.InputBindings>
 	<DockPanel>
 		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
 			<Button Content="New Article" Command="{Binding NewArticleCommand}" Padding="12,4" Margin="0,0,4,0"/>
-			<Button Content="Save" Command="{Binding SaveCommand}" Padding="12,4"/>
+			<Button Content="Save" Command="{Binding SaveCommand}" Padding="12,4" Margin="0,0,4,0"/>
+			<Button Content="Undo" Command="{Binding UndoCommand}" Padding="12,4" ToolTip="Ctrl+Z"/>
 		</StackPanel>
 		<StatusBar DockPanel.Dock="Bottom">
 			<TextBlock Text="{Binding Status}"/>

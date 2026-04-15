@@ -14,7 +14,7 @@
 				<DataTemplate>
 					<StackPanel>
 						<Border x:Name="DropIndicator" Height="2" Background="DodgerBlue" Visibility="Collapsed"/>
-						<DockPanel Margin="0,2"
+						<DockPanel x:Name="ItemRoot" Margin="0,2"
 							AllowDrop="True"
 							DragEnter="ItemRoot_DragEnter"
 							DragOver="ItemRoot_DragOver"
@@ -42,6 +42,14 @@
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
+		<Border x:Name="EndDropZone"
+			Height="24" Margin="12,2,0,0" BorderBrush="Transparent" BorderThickness="0,2,0,0"
+			Background="Transparent"
+			AllowDrop="True"
+			DragEnter="EndDropZone_DragEnter"
+			DragOver="EndDropZone_DragOver"
+			DragLeave="EndDropZone_DragLeave"
+			Drop="EndDropZone_Drop"/>
 		<ItemsControl ItemsSource="{Binding AddOptions}" Margin="12,4,0,0">
 			<ItemsControl.ItemsPanel>
 				<ItemsPanelTemplate>

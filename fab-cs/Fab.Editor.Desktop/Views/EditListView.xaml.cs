@@ -8,6 +8,7 @@ namespace Fab.Editor.Desktop.Views;
 public partial class EditListView : UserControl {
 	private Point _dragStart;
 	private EditGenericModelViewModel? _dragItem;
+	private FrameworkElement? _dragSourceVisual;
 
 	public EditListView() {
 		InitializeComponent();
@@ -17,6 +18,7 @@ public partial class EditListView : UserControl {
 		if (sender is FrameworkElement fe && fe.DataContext is EditGenericModelViewModel item) {
 			_dragStart = e.GetPosition(null);
 			_dragItem = item;
+			_dragSourceVisual = FindItemRoot(fe);
 		}
 	}
 
@@ -28,8 +30,17 @@ public partial class EditListView : UserControl {
 			return;
 
 		var source = _dragItem;
+		var visual = _dragSourceVisual;
 		_dragItem = null;
-		DragDrop.DoDragDrop((DependencyObject)sender, source, DragDropEffects.Move);
+		_dragSourceVisual = null;
+
+		if (visual is not null) visual.Opacity = 0.5;
+		try {
+			DragDrop.DoDragDrop((DependencyObject)sender, source, DragDropEffects.Move);
+		}
+		finally {
+			if (visual is not null) visual.Opacity = 1.0;
+		}
 	}
 
 	private void ItemRoot_DragEnter(object sender, DragEventArgs e) {
@@ -56,6 +67,30 @@ public partial class EditListView : UserControl {
 		e.Handled = true;
 	}
 
+	private void EndDropZone_DragEnter(object sender, DragEventArgs e) {
+		if (sender is Border b && e.Data.GetDataPresent(typeof(EditGenericModelViewModel)))
+			b.BorderBrush = System.Windows.Media.Brushes.DodgerBlue;
+	}
+
+	private void EndDropZone_DragOver(object sender, DragEventArgs e) {
+		e.Effects = e.Data.GetDataPresent(typeof(EditGenericModelViewModel))
+			? DragDropEffects.Move
+			: DragDropEffects.None;
+		e.Handled = true;
+	}
+
+	private void EndDropZone_DragLeave(object sender, DragEventArgs e) {
+		if (sender is Border b) b.BorderBrush = System.Windows.Media.Brushes.Transparent;
+	}
+
+	private void EndDropZone_Drop(object sender, DragEventArgs e) {
+		if (sender is Border b) b.BorderBrush = System.Windows.Media.Brushes.Transparent;
+		if (e.Data.GetData(typeof(EditGenericModelViewModel)) is not EditGenericModelViewModel source) return;
+		if (DataContext is not EditListViewModel listVm) return;
+		listVm.MoveToEnd(source);
+		e.Handled = true;
+	}
+
 	private static bool IsValidDrag(object sender, DragEventArgs e, out EditGenericModelViewModel source, out EditGenericModelViewModel target) {
 		source = null!;
 		target = null!;
@@ -70,5 +105,14 @@ public partial class EditListView : UserControl {
 		if (sender is not DockPanel dp) return;
 		if (dp.Parent is not StackPanel sp || sp.Children.Count == 0) return;
 		if (sp.Children[0] is Border indicator) indicator.Visibility = visibility;
+	}
+
+	private static FrameworkElement? FindItemRoot(DependencyObject start) {
+		DependencyObject? current = start;
+		while (current is not null) {
+			if (current is DockPanel dp && dp.Name == "ItemRoot") return dp;
+			current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+		}
+		return null;
 	}
 }

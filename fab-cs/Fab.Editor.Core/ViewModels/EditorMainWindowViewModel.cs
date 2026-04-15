@@ -13,6 +13,7 @@ namespace Fab.Editor.Core.ViewModels;
 public sealed partial class EditorMainWindowViewModel : ObservableObject, IDisposable {
 	private readonly IDbContextFactory<CmsWorkingDbContext> _factory;
 	private readonly IConfirmationService? _confirmation;
+	private readonly UndoService _undo = new();
 	private CmsWorkingDbContext _db;
 
 	public ObservableCollection<ArticleListItemViewModel> Articles { get; } = [];
@@ -24,6 +25,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[ObservableProperty] private string _title = "Fab CMS Editor";
 
 	public bool HasUnsavedChanges => Articles.Any(a => a.IsDirty);
+	public bool CanUndo => _undo.CanUndo;
 
 	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory, IConfirmationService? confirmation = null) {
 		_factory = factory;
@@ -31,6 +33,10 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		_db = factory.CreateDbContext();
 		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
 		Articles.CollectionChanged += OnArticlesChanged;
+		_undo.Changed += (_, _) => {
+			OnPropertyChanged(nameof(CanUndo));
+			UndoCommand.NotifyCanExecuteChanged();
+		};
 	}
 
 	public async Task LoadAsync(CancellationToken cancellationToken = default) {
@@ -49,6 +55,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 				Articles.Add(item);
 			}
 
+			_undo.Clear();
 			SelectedArticle = Articles.FirstOrDefault();
 			OnPropertyChanged(nameof(HasUnsavedChanges));
 			Status = Articles.Count == 0
@@ -64,9 +71,10 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	}
 
 	partial void OnSelectedArticleChanged(ArticleListItemViewModel? value) {
+		_undo.Clear();
 		Editor = value is null
 			? null
-			: new EditGenericModelViewModel(value.Article, _confirmation, () => value.IsDirty = true);
+			: new EditGenericModelViewModel(value.Article, _confirmation, () => value.IsDirty = true, _undo);
 	}
 
 	[RelayCommand]
@@ -98,12 +106,11 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		IsBusy = true;
 		try {
 			await _db.SaveChangesAsync(cancellationToken);
-			// SaveChanges persists every tracked entity, not just the selected
-			// article's graph — clear dirty across the whole list to match.
 			foreach (var item in Articles) {
 				item.RefreshTitle();
 				item.IsDirty = false;
 			}
+			_undo.Clear();
 			Status = $"Saved article #{SelectedArticle.Id}";
 		}
 		catch (Exception ex) {
@@ -114,11 +121,11 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		}
 	}
 
-	/// <summary>
-	/// Call from the window's closing handler. Returns true if closing
-	/// should proceed, false to cancel. Prompts the user when there are
-	/// unsaved changes; may save in-place if the user picks Save.
-	/// </summary>
+	[RelayCommand(CanExecute = nameof(CanUndo))]
+	private void Undo() {
+		_undo.Undo();
+	}
+
 	public async Task<bool> ConfirmCloseAsync(CancellationToken cancellationToken = default) {
 		if (!HasUnsavedChanges) return true;
 		if (_confirmation is null) return true;
@@ -128,8 +135,6 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		switch (result) {
 			case UnsavedChangesResult.Save:
 				await SaveAsync(cancellationToken);
-				// If Save failed HandleFailure clears dirty via reload; either
-				// way, HasUnsavedChanges reflects current state.
 				return !HasUnsavedChanges;
 			case UnsavedChangesResult.Discard:
 				return true;
@@ -151,6 +156,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		Status = $"{operation} failed — reloading: {ex.Message}";
 		try { _db.Dispose(); } catch { }
 		_db = _factory.CreateDbContext();
+		_undo.Clear();
 		_ = LoadAsync();
 	}
 

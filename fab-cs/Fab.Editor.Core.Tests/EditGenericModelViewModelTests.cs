@@ -280,6 +280,111 @@ public class EditGenericModelViewModelTests {
 	}
 
 	[Fact]
+	public void Undo_TextEdit_RestoresPreviousValue() {
+		var paragraph = new Paragraph { Text = "original" };
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(paragraph, undo: undo);
+		var field = vm.Fields.OfType<EditTextFieldViewModel>().Single();
+
+		field.Text = "edited";
+		undo.CanUndo.ShouldBeTrue();
+
+		undo.Undo().ShouldBeTrue();
+		paragraph.Text.ShouldBe("original");
+		undo.CanUndo.ShouldBeFalse();
+	}
+
+	[Fact]
+	public void Undo_RapidTextEdits_CoalesceIntoOneStep() {
+		var paragraph = new Paragraph { Text = "a" };
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(paragraph, undo: undo);
+		var field = vm.Fields.OfType<EditTextFieldViewModel>().Single();
+
+		field.Text = "ab";
+		field.Text = "abc";
+		field.Text = "abcd";
+
+		undo.Undo().ShouldBeTrue();
+		paragraph.Text.ShouldBe("a");
+		undo.CanUndo.ShouldBeFalse();
+	}
+
+	[Fact]
+	public void Undo_ListAdd_RemovesItem() {
+		var article = new Article();
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(article, undo: undo);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+
+		list.AddCommand.Execute(list.AddOptions.First());
+		article.Entries.Count.ShouldBe(1);
+
+		undo.Undo().ShouldBeTrue();
+		article.Entries.Count.ShouldBe(0);
+	}
+
+	[Fact]
+	public async Task Undo_Delete_RestoresAtOriginalIndex() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+				new(2, new Paragraph { Text = "C" }),
+			}
+		};
+		var confirmer = new StubConfirmationService(result: true);
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(article, confirmer, undo: undo);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+
+		await list.DeleteCommand.ExecuteAsync(list.Items[1]); // delete B
+		article.Entries.Count.ShouldBe(2);
+
+		undo.Undo().ShouldBeTrue();
+		article.Entries.Count.ShouldBe(3);
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("B");
+	}
+
+	[Fact]
+	public void Undo_MoveBefore_RestoresPosition() {
+		var article = new Article {
+			Entries = {
+				new(0, new Paragraph { Text = "A" }),
+				new(1, new Paragraph { Text = "B" }),
+				new(2, new Paragraph { Text = "C" }),
+			}
+		};
+		var undo = new UndoService();
+		var vm = new EditGenericModelViewModel(article, undo: undo);
+		var list = vm.Fields.OfType<EditListViewModel>().Single();
+		var a = (EditGenericModelViewModel)list.Items[0];
+		var c = (EditGenericModelViewModel)list.Items[2];
+
+		list.MoveBefore(c, a); // C, A, B
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("C");
+
+		undo.Undo().ShouldBeTrue();
+		((Paragraph)article.Entries[0].Content).Text.ShouldBe("A");
+		((Paragraph)article.Entries[1].Content).Text.ShouldBe("B");
+		((Paragraph)article.Entries[2].Content).Text.ShouldBe("C");
+	}
+
+	[Fact]
+	public void Summary_ReturnsFirstNonEmptyStringProperty() {
+		var p = new Paragraph { Text = "hello world" };
+		new EditGenericModelViewModel(p).Summary.ShouldBe("hello world");
+
+		var empty = new Paragraph { Text = "" };
+		new EditGenericModelViewModel(empty).Summary.ShouldBe(nameof(Paragraph));
+
+		var longP = new Paragraph { Text = new string('x', 100) };
+		var summary = new EditGenericModelViewModel(longP).Summary;
+		summary.Length.ShouldBe(53); // 50 + "..."
+		summary.ShouldEndWith("...");
+	}
+
+	[Fact]
 	public void BuildFields_RecursesIntoNestedUnique() {
 		var entry = new OrderedContentEntry(0, new Paragraph { Text = "nested" });
 
