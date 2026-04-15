@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fab.Core;
@@ -21,11 +23,14 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	[ObservableProperty] private bool _isBusy;
 	[ObservableProperty] private string _title = "Fab CMS Editor";
 
+	public bool HasUnsavedChanges => Articles.Any(a => a.IsDirty);
+
 	public EditorMainWindowViewModel(IDbContextFactory<CmsWorkingDbContext> factory, IConfirmationService? confirmation = null) {
 		_factory = factory;
 		_confirmation = confirmation;
 		_db = factory.CreateDbContext();
 		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
+		Articles.CollectionChanged += OnArticlesChanged;
 	}
 
 	public async Task LoadAsync(CancellationToken cancellationToken = default) {
@@ -36,11 +41,16 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 				.Include(a => a.Entries).ThenInclude(e => e.Content)
 				.ToListAsync(cancellationToken);
 
+			foreach (var old in Articles) old.PropertyChanged -= OnArticleItemPropertyChanged;
 			Articles.Clear();
-			foreach (var article in articles)
-				Articles.Add(new ArticleListItemViewModel(article));
+			foreach (var article in articles) {
+				var item = new ArticleListItemViewModel(article);
+				item.PropertyChanged += OnArticleItemPropertyChanged;
+				Articles.Add(item);
+			}
 
 			SelectedArticle = Articles.FirstOrDefault();
+			OnPropertyChanged(nameof(HasUnsavedChanges));
 			Status = Articles.Count == 0
 				? "No articles in database"
 				: $"Loaded {Articles.Count} article(s)";
@@ -56,11 +66,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 	partial void OnSelectedArticleChanged(ArticleListItemViewModel? value) {
 		Editor = value is null
 			? null
-			: new EditGenericModelViewModel(value.Article, _confirmation, () => MarkDirty(value));
-	}
-
-	private void MarkDirty(ArticleListItemViewModel item) {
-		item.IsDirty = true;
+			: new EditGenericModelViewModel(value.Article, _confirmation, () => value.IsDirty = true);
 	}
 
 	[RelayCommand]
@@ -73,6 +79,7 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 			await _db.SaveChangesAsync(cancellationToken);
 
 			var item = new ArticleListItemViewModel(article);
+			item.PropertyChanged += OnArticleItemPropertyChanged;
 			Articles.Add(item);
 			SelectedArticle = item;
 			Status = $"Created article #{article.Id}";
@@ -91,8 +98,12 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		IsBusy = true;
 		try {
 			await _db.SaveChangesAsync(cancellationToken);
-			SelectedArticle.RefreshTitle();
-			SelectedArticle.IsDirty = false;
+			// SaveChanges persists every tracked entity, not just the selected
+			// article's graph — clear dirty across the whole list to match.
+			foreach (var item in Articles) {
+				item.RefreshTitle();
+				item.IsDirty = false;
+			}
 			Status = $"Saved article #{SelectedArticle.Id}";
 		}
 		catch (Exception ex) {
@@ -103,14 +114,41 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		}
 	}
 
+	/// <summary>
+	/// Call from the window's closing handler. Returns true if closing
+	/// should proceed, false to cancel. Prompts the user when there are
+	/// unsaved changes; may save in-place if the user picks Save.
+	/// </summary>
+	public async Task<bool> ConfirmCloseAsync(CancellationToken cancellationToken = default) {
+		if (!HasUnsavedChanges) return true;
+		if (_confirmation is null) return true;
+
+		var result = await _confirmation.PromptUnsavedAsync(
+			"You have unsaved changes. Save before closing?");
+		switch (result) {
+			case UnsavedChangesResult.Save:
+				await SaveAsync(cancellationToken);
+				// If Save failed HandleFailure clears dirty via reload; either
+				// way, HasUnsavedChanges reflects current state.
+				return !HasUnsavedChanges;
+			case UnsavedChangesResult.Discard:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void OnArticleItemPropertyChanged(object? sender, PropertyChangedEventArgs e) {
+		if (e.PropertyName == nameof(ArticleListItemViewModel.IsDirty))
+			OnPropertyChanged(nameof(HasUnsavedChanges));
+	}
+
+	private void OnArticlesChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+		OnPropertyChanged(nameof(HasUnsavedChanges));
+	}
+
 	private void HandleFailure(string operation, Exception ex) {
 		Status = $"{operation} failed — reloading: {ex.Message}";
-		// EF can leave the context in an unrecoverable state after a failed
-		// SaveChanges/query. Drop it and rebuild so the next operation has
-		// a clean slate, then re-Load so the UI reflects persisted state
-		// instead of stale references to the disposed context's entities.
-		// Unsaved in-memory edits are intentionally lost — recovering them
-		// would require re-applying field-by-field against a fresh graph.
 		try { _db.Dispose(); } catch { }
 		_db = _factory.CreateDbContext();
 		_ = LoadAsync();

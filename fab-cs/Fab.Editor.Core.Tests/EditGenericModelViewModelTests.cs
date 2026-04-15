@@ -235,6 +235,8 @@ public class EditGenericModelViewModelTests {
 			CallCount++;
 			return Task.FromResult(_result);
 		}
+		public Task<UnsavedChangesResult> PromptUnsavedAsync(string message, string title = "Unsaved changes") =>
+			Task.FromResult(UnsavedChangesResult.Cancel);
 	}
 
 	[Fact]
