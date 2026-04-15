@@ -8,7 +8,7 @@
 	d:DesignHeight="50" d:DesignWidth="400"
 	d:DataContext="{d:DesignInstance vm:EditTextFieldViewModel}">
 	<DockPanel Margin="0,2">
-		<TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="120" VerticalAlignment="Center"/>
+		<TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Style="{StaticResource FieldLabelStyle}"/>
 		<TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
 	</DockPanel>
 </UserControl>

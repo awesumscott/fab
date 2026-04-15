@@ -8,7 +8,7 @@
 	d:DesignHeight="100" d:DesignWidth="400"
 	d:DataContext="{d:DesignInstance vm:ImageViewModel}">
 	<StackPanel>
-		<TextBlock Text="{Binding Alt}" FontStyle="Italic"/>
-		<TextBlock Text="{Binding Url}" Foreground="Gray"/>
+		<TextBlock Text="{Binding Alt}" Style="{StaticResource ImageAltStyle}"/>
+		<TextBlock Text="{Binding Url}" Style="{StaticResource ImageUrlStyle}"/>
 	</StackPanel>
 </UserControl>

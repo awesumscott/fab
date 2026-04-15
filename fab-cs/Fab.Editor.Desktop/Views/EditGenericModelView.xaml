@@ -7,9 +7,9 @@
 	mc:Ignorable="d"
 	d:DesignHeight="450" d:DesignWidth="600"
 	d:DataContext="{d:DesignInstance vm:EditGenericModelViewModel}">
-	<Border BorderBrush="LightGray" BorderThickness="1" Padding="8" Margin="0,4">
+	<Border Style="{StaticResource EditorCardStyle}">
 		<StackPanel>
-			<TextBlock Text="{Binding TypeName}" FontStyle="Italic" Foreground="Gray" Margin="0,0,0,4"/>
+			<TextBlock Text="{Binding TypeName}" Style="{StaticResource TypeNameStyle}"/>
 			<ItemsControl ItemsSource="{Binding Fields}"/>
 		</StackPanel>
 	</Border>

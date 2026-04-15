@@ -4,15 +4,20 @@
 	xmlns:v="clr-namespace:Fab.Editor.Desktop.Views"
 	xmlns:vm="clr-namespace:Fab.Editor.Core.ViewModels;assembly=Fab.Editor.Core">
 	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Styles.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
 
-		<DataTemplate DataType="{x:Type vm:EditTextFieldViewModel}">
-			<v:EditTextView/>
-		</DataTemplate>
-		<DataTemplate DataType="{x:Type vm:EditListViewModel}">
-			<v:EditListView/>
-		</DataTemplate>
-		<DataTemplate DataType="{x:Type vm:EditGenericModelViewModel}">
-			<v:EditGenericModelView/>
-		</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:EditTextFieldViewModel}">
+				<v:EditTextView/>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:EditListViewModel}">
+				<v:EditListView/>
+			</DataTemplate>
+			<DataTemplate DataType="{x:Type vm:EditGenericModelViewModel}">
+				<v:EditGenericModelView/>
+			</DataTemplate>
+		</ResourceDictionary>
 	</Application.Resources>
 </Application>

@@ -13,26 +13,24 @@
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
 					<StackPanel>
-						<Border x:Name="DropIndicator" Height="2" Background="DodgerBlue" Visibility="Collapsed"/>
+						<Border x:Name="DropIndicator" Style="{StaticResource DropIndicatorStyle}"/>
 						<DockPanel x:Name="ItemRoot" Margin="0,2"
 							AllowDrop="True"
 							DragEnter="ItemRoot_DragEnter"
 							DragOver="ItemRoot_DragOver"
 							DragLeave="ItemRoot_DragLeave"
 							Drop="ItemRoot_Drop">
-							<Border DockPanel.Dock="Left" Width="12" Margin="0,0,4,0"
-								Background="#D0D0D0" Cursor="SizeAll"
-								ToolTip="Drag to reorder"
+							<Border DockPanel.Dock="Left" Style="{StaticResource DragHandleStyle}" ToolTip="Drag to reorder"
 								PreviewMouseLeftButtonDown="Handle_PreviewMouseLeftButtonDown"
 								PreviewMouseMove="Handle_PreviewMouseMove"/>
 							<StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="4,0,0,0">
-								<Button Content="&#x2191;" Width="24" Height="24" ToolTip="Move up"
+								<Button Content="&#x2191;" Style="{StaticResource IconButtonStyle}" ToolTip="Move up"
 									Command="{Binding DataContext.MoveUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 									CommandParameter="{Binding}"/>
-								<Button Content="&#x2193;" Width="24" Height="24" ToolTip="Move down" Margin="2,0,0,0"
+								<Button Content="&#x2193;" Style="{StaticResource IconButtonStyle}" ToolTip="Move down"
 									Command="{Binding DataContext.MoveDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 									CommandParameter="{Binding}"/>
-								<Button Content="&#x00D7;" Width="24" Height="24" ToolTip="Delete" Margin="2,0,0,0"
+								<Button Content="&#x00D7;" Style="{StaticResource IconButtonStyle}" ToolTip="Delete"
 									Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 									CommandParameter="{Binding}"/>
 							</StackPanel>
@@ -42,9 +40,7 @@
 				</DataTemplate>
 			</ItemsControl.ItemTemplate>
 		</ItemsControl>
-		<Border x:Name="EndDropZone"
-			Height="24" Margin="12,2,0,0" BorderBrush="Transparent" BorderThickness="0,2,0,0"
-			Background="Transparent"
+		<Border x:Name="EndDropZone" Style="{StaticResource EndDropZoneStyle}"
 			AllowDrop="True"
 			DragEnter="EndDropZone_DragEnter"
 			DragOver="EndDropZone_DragOver"
@@ -58,7 +54,7 @@
 			</ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<Button Margin="0,0,4,0" Padding="8,2"
+					<Button Style="{StaticResource AddEntryButtonStyle}"
 						Content="{Binding Label, StringFormat='Add {0}'}"
 						Command="{Binding DataContext.AddCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
 						CommandParameter="{Binding}"/>
