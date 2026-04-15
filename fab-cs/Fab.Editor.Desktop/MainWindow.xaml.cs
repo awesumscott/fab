@@ -17,9 +17,12 @@ public partial class MainWindow : Window {
 
 		e.Cancel = true;
 		var proceed = await vm.ConfirmCloseAsync();
-		if (proceed) {
-			_forceClose = true;
-			Close();
-		}
+		if (!proceed) return;
+
+		_forceClose = true;
+		// Defer to the next dispatcher tick: calling Close() directly here
+		// races the in-flight Closing cycle and throws
+		// "Cannot ... call Close ... while a Window is closing".
+		await Dispatcher.InvokeAsync(Close, System.Windows.Threading.DispatcherPriority.Background);
 	}
 }
