@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fab.Core;
@@ -8,8 +9,10 @@ namespace Fab.Editor.Core.ViewModels;
 
 public sealed partial class EditorMainWindowViewModel : ObservableObject, IDisposable {
 	private readonly CmsWorkingDbContext _db;
-	private Article? _article;
 
+	public ObservableCollection<ArticleListItemViewModel> Articles { get; } = [];
+
+	[ObservableProperty] private ArticleListItemViewModel? _selectedArticle;
 	[ObservableProperty] private EditGenericModelViewModel? _editor;
 	[ObservableProperty] private string? _status;
 	[ObservableProperty] private bool _isBusy;
@@ -20,18 +23,26 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		Title = $"Fab CMS Editor — {_db.Database.GetConnectionString()}";
 	}
 
-	public async Task LoadFirstArticleAsync(CancellationToken cancellationToken = default) {
+	public async Task LoadAsync(CancellationToken cancellationToken = default) {
 		IsBusy = true;
 		try {
 			await _db.Database.MigrateAsync(cancellationToken);
-			_article = await _db.Articles
+			var articles = await _db.Articles
 				.Include(a => a.Entries).ThenInclude(e => e.Content)
-				.FirstOrDefaultAsync(cancellationToken);
-			Editor = _article is null ? null : new EditGenericModelViewModel(_article);
-			Status = _article is null ? "No articles in database" : $"Loaded article #{_article.Id}";
+				.ToListAsync(cancellationToken);
+
+			Articles.Clear();
+			foreach (var article in articles)
+				Articles.Add(new ArticleListItemViewModel(article));
+
+			SelectedArticle = Articles.FirstOrDefault();
+			Status = Articles.Count == 0
+				? "No articles in database"
+				: $"Loaded {Articles.Count} article(s)";
 		}
 		catch (Exception ex) {
 			Status = $"Load failed: {ex.Message}";
+			Articles.Clear();
 			Editor = null;
 		}
 		finally {
@@ -39,16 +50,23 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 		}
 	}
 
+	partial void OnSelectedArticleChanged(ArticleListItemViewModel? value) {
+		Editor = value is null ? null : new EditGenericModelViewModel(value.Article);
+	}
+
 	[RelayCommand]
 	private async Task NewArticleAsync(CancellationToken cancellationToken) {
 		IsBusy = true;
 		try {
 			await _db.Database.MigrateAsync(cancellationToken);
-			_article = new Article { Title = "Untitled" };
-			_db.Articles.Add(_article);
+			var article = new Article { Title = "Untitled" };
+			_db.Articles.Add(article);
 			await _db.SaveChangesAsync(cancellationToken);
-			Editor = new EditGenericModelViewModel(_article);
-			Status = $"Created article #{_article.Id}";
+
+			var item = new ArticleListItemViewModel(article);
+			Articles.Add(item);
+			SelectedArticle = item;
+			Status = $"Created article #{article.Id}";
 		}
 		catch (Exception ex) {
 			Status = $"Create failed: {ex.Message}";
@@ -60,11 +78,12 @@ public sealed partial class EditorMainWindowViewModel : ObservableObject, IDispo
 
 	[RelayCommand]
 	private async Task SaveAsync(CancellationToken cancellationToken) {
-		if (_article is null) return;
+		if (SelectedArticle is null) return;
 		IsBusy = true;
 		try {
 			await _db.SaveChangesAsync(cancellationToken);
-			Status = $"Saved article #{_article.Id}";
+			SelectedArticle.RefreshTitle();
+			Status = $"Saved article #{SelectedArticle.Id}";
 		}
 		catch (Exception ex) {
 			Status = $"Save failed: {ex.Message}";

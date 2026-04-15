@@ -28,7 +28,7 @@ public partial class App : Application {
 		Current.MainWindow = mainWindow;
 		mainWindow.Show();
 
-		_ = viewModel.LoadFirstArticleAsync();
+		_ = viewModel.LoadAsync();
 	}
 
 	protected override async void OnExit(ExitEventArgs e) {

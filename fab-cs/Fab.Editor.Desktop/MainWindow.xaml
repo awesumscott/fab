@@ -3,7 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:v="clr-namespace:Fab.Editor.Desktop.Views"
 	xmlns:vm="clr-namespace:Fab.Editor.Core.ViewModels;assembly=Fab.Editor.Core"
-	Title="{Binding Title}" Height="600" Width="800"
+	Title="{Binding Title}" Height="600" Width="900"
 	d:DataContext="{d:DesignInstance vm:EditorMainWindowViewModel}"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,8 +16,21 @@
 		<StatusBar DockPanel.Dock="Bottom">
 			<TextBlock Text="{Binding Status}"/>
 		</StatusBar>
-		<ScrollViewer>
-			<ContentPresenter Content="{Binding Editor}" Margin="8"/>
-		</ScrollViewer>
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="220"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<ListBox Grid.Column="0"
+				ItemsSource="{Binding Articles}"
+				SelectedItem="{Binding SelectedArticle, Mode=TwoWay}"
+				DisplayMemberPath="Title"
+				Margin="4"/>
+			<GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="LightGray"/>
+			<ScrollViewer Grid.Column="2">
+				<ContentPresenter Content="{Binding Editor}" Margin="8"/>
+			</ScrollViewer>
+		</Grid>
 	</DockPanel>
 </Window>
